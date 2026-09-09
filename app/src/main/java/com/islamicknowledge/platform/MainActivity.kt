@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,7 +57,7 @@ private fun IslamicKnowledgeApp() {
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
     var selected by rememberSaveable { mutableIntStateOf(0) }
-    var selectedSurah by rememberSaveable { mutableStateOf<Surah?>(null) }
+    var selectedSurah by remember { mutableStateOf<Surah?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
