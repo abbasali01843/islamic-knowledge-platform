@@ -19,12 +19,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.islamicknowledge.platform.core.design.IslamicKnowledgeTheme
+import com.islamicknowledge.platform.core.model.quran.Surah
 import com.islamicknowledge.platform.feature.home.HomeScreen
+import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
 
 private data class Destination(
@@ -53,6 +56,7 @@ private fun IslamicKnowledgeApp() {
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
     var selected by rememberSaveable { mutableIntStateOf(0) }
+    var selectedSurah by rememberSaveable { mutableStateOf<Surah?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -61,7 +65,10 @@ private fun IslamicKnowledgeApp() {
                 destinations.forEachIndexed { index, destination ->
                     NavigationBarItem(
                         selected = selected == index,
-                        onClick = { selected = index },
+                        onClick = {
+                            selected = index
+                            if (index != 1) selectedSurah = null
+                        },
                         icon = destination.icon,
                         label = { Text(destination.label) },
                     )
@@ -72,7 +79,17 @@ private fun IslamicKnowledgeApp() {
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (selected) {
                 0 -> HomeScreen(modifier = Modifier.fillMaxSize())
-                1 -> QuranScreen()
+                1 -> {
+                    val surah = selectedSurah
+                    if (surah == null) {
+                        QuranScreen(onSurahClick = { selectedSurah = it })
+                    } else {
+                        QuranReaderScreen(
+                            surah = surah,
+                            onBack = { selectedSurah = null },
+                        )
+                    }
+                }
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
