@@ -26,7 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.islamicknowledge.platform.core.design.SectionHeader
+import com.islamicknowledge.platform.core.design.components.SectionHeader
 import com.islamicknowledge.platform.core.model.quran.RevelationType
 import com.islamicknowledge.platform.core.model.quran.Surah
 
@@ -56,7 +56,7 @@ fun QuranScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            SectionHeader(title = "কুরআন", subtitle = "পবিত্র কুরআন")
+            SectionHeader(title = "কুরআন")
             IconButton(onClick = { /* Search field is always available in this foundation. */ }) {
                 Icon(Icons.Rounded.Search, contentDescription = "কুরআন খুঁজুন")
             }
