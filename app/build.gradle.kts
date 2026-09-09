@@ -37,6 +37,7 @@ kotlin {
 
 dependencies {
     implementation(project(":core:design"))
+    implementation(project(":core:model"))
     implementation(project(":feature:home"))
     implementation(project(":feature:quran"))
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
