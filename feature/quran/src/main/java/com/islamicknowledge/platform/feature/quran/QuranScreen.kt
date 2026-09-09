@@ -30,22 +30,15 @@ import com.islamicknowledge.platform.core.design.components.SectionHeader
 import com.islamicknowledge.platform.core.model.quran.RevelationType
 import com.islamicknowledge.platform.core.model.quran.Surah
 
-private val foundationSurahs = listOf(
-    Surah(1, 1, "الفاتحة", "Al-Fatihah", "আল-ফাতিহা", RevelationType.MECCAN, 7, 5),
-    Surah(2, 2, "البقرة", "Al-Baqarah", "আল-বাকারা", RevelationType.MEDINAN, 286, 87),
-    Surah(3, 3, "آل عمران", "Ali 'Imran", "আলে ইমরান", RevelationType.MEDINAN, 200, 89),
-    Surah(4, 4, "النساء", "An-Nisa", "আন-নিসা", RevelationType.MEDINAN, 176, 92),
-    Surah(5, 5, "المائدة", "Al-Ma'idah", "আল-মায়িদাহ", RevelationType.MEDINAN, 120, 112),
-)
-
 @Composable
 fun QuranScreen(
     onSurahClick: (Surah) -> Unit = {},
 ) {
     var query by remember { mutableStateOf("") }
-    val filtered = foundationSurahs.filter {
+    val filtered = quranSurahs.filter {
         query.isBlank() || it.nameBengali.contains(query, ignoreCase = true) ||
-            it.nameEnglish.contains(query, ignoreCase = true) || it.nameArabic.contains(query)
+            it.nameEnglish.contains(query, ignoreCase = true) ||
+            it.nameArabic.contains(query)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -57,7 +50,7 @@ fun QuranScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             SectionHeader(title = "কুরআন")
-            IconButton(onClick = { /* Search field is always available in this foundation. */ }) {
+            IconButton(onClick = { /* Search field is always available. */ }) {
                 Icon(Icons.Rounded.Search, contentDescription = "কুরআন খুঁজুন")
             }
         }
@@ -74,7 +67,7 @@ fun QuranScreen(
         )
 
         Text(
-            text = "ফাউন্ডেশন ডেটা — পূর্ণ ১১৪ সূরার লাইসেন্স-ভেরিফায়েড ডেটাসেট পরবর্তী ধাপে যুক্ত হবে",
+            text = "১১৪টি সূরা • অফলাইন ক্যাটালগ • ${filtered.size}টি ফলাফল",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
         )
