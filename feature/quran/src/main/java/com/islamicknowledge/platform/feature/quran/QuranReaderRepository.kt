@@ -40,6 +40,10 @@ internal class QuranReaderRepository(context: Context) {
                                 number = ayah.getInt("number"),
                                 arabic = ayah.getString("arabic"),
                                 bengali = ayah.getString("bengali"),
+                                juz = ayah.optionalInt("juz"),
+                                hizb = ayah.optionalInt("hizb"),
+                                page = ayah.optionalInt("page"),
+                                hasSajdah = ayah.optBoolean("hasSajdah", false),
                             ),
                         )
                     }
@@ -56,6 +60,9 @@ internal class QuranReaderRepository(context: Context) {
         )
     }
 }
+
+private fun JSONObject.optionalInt(key: String): Int? =
+    if (has(key) && !isNull(key)) optInt(key).takeIf { it > 0 } else null
 
 private data class QuranReaderDocument(
     val surahs: List<QuranReaderSurah>,
