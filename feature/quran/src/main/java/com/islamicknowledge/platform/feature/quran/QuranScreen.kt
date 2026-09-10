@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -26,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.islamicknowledge.platform.core.design.components.SectionHeader
@@ -113,10 +116,7 @@ private fun SurahRow(
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = surah.nameArabic,
-                    style = MaterialTheme.typography.titleLarge,
-                )
+                Text(text = surah.nameArabic, style = MaterialTheme.typography.titleLarge)
                 Text(
                     text = if (surah.revelationType == RevelationType.MECCAN) "মাক্কী" else "মাদানী",
                     style = MaterialTheme.typography.labelSmall,
@@ -131,7 +131,14 @@ fun QuranReaderScreen(
     surah: Surah,
     onBack: () -> Unit,
 ) {
-    val ayahs = quranReaderAyahs(surah.number)
+    val context = LocalContext.current
+    val preferences = remember(context) { QuranReaderPreferences(context) }
+    val allAyahs = quranReaderAyahs(surah.number)
+    var query by remember { mutableStateOf("") }
+    var bookmarkedKeys by remember { mutableStateOf(allAyahs.filter { preferences.isBookmarked(surah.number, it.number) }.map { it.number }.toSet()) }
+    val ayahs = allAyahs.filter {
+        query.isBlank() || it.arabic.contains(query, ignoreCase = true) || it.bengali.contains(query, ignoreCase = true)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -152,6 +159,18 @@ fun QuranReaderScreen(
             }
         }
 
+        if (allAyahs.isNotEmpty()) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                singleLine = true,
+                label = { Text("এই সূরার আয়াত খুঁজুন") },
+            )
+        }
+
         if (ayahs.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -161,7 +180,7 @@ fun QuranReaderScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "এই সূরার পূর্ণ আয়াত ডেটা পরবর্তী কনটেন্ট প্যাকেজে যুক্ত হবে।",
+                    text = if (allAyahs.isEmpty()) "এই সূরার পূর্ণ আয়াত ডেটা পরবর্তী কনটেন্ট প্যাকেজে যুক্ত হবে।" else "এই খোঁজার সাথে কোনো আয়াত মেলেনি।",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
@@ -172,12 +191,28 @@ fun QuranReaderScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(ayahs, key = { it.number }) { ayah ->
+                    val bookmarked = ayah.number in bookmarkedKeys
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(18.dp)) {
-                            Text(
-                                text = "${ayah.number}",
-                                style = MaterialTheme.typography.labelLarge,
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "আয়াত ${ayah.number}",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                IconButton(onClick = {
+                                    val newValue = preferences.toggleBookmark(surah.number, ayah.number)
+                                    bookmarkedKeys = if (newValue) bookmarkedKeys + ayah.number else bookmarkedKeys - ayah.number
+                                }) {
+                                    Icon(
+                                        imageVector = if (bookmarked) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
+                                        contentDescription = if (bookmarked) "বুকমার্ক সরান" else "বুকমার্ক করুন",
+                                    )
+                                }
+                            }
                             Text(
                                 text = ayah.arabic,
                                 modifier = Modifier
@@ -186,9 +221,13 @@ fun QuranReaderScreen(
                                 style = MaterialTheme.typography.headlineSmall,
                                 textAlign = TextAlign.End,
                             )
+                            Text(text = ayah.bengali, style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                text = ayah.bengali,
-                                style = MaterialTheme.typography.bodyLarge,
+                                text = "পড়া হয়েছে হিসেবে সংরক্ষণ",
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier
+                                    .padding(top = 12.dp)
+                                    .clickable { preferences.saveLastRead(surah.number, ayah.number) },
                             )
                         }
                     }
