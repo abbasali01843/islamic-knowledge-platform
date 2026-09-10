@@ -3,8 +3,9 @@
 
 Arabic text comes from quran-json (Uthmani text sourced from The Noble Qur'an
 Encyclopedia). Bengali meanings come verbatim from QuranEnc's Bengali Rowwad
-translation API. The generated asset is bundled into the APK, so the app does
-not need network access to read the Quran.
+translation API. Structural Hafs metadata comes from Al Quran Cloud's Quran
+API. The generated asset is bundled into the APK, so the app does not need
+network access to read the Quran.
 """
 
 from __future__ import annotations
@@ -17,7 +18,9 @@ from urllib.request import Request, urlopen
 
 ARABIC_URL = "https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/quran.json"
 TRANSLATION_URL = "https://quranenc.com/api/v1/translation/sura/bengali_rwwad/{sura}"
+METADATA_URL = "https://api.alquran.cloud/v1/juz/{juz}/quran-uthmani"
 BENGALI_VERSION = "1.1.2"
+METADATA_SOURCE_VERSION = "Al Quran Cloud API / Hafs metadata"
 
 
 def get_json(url: str):
@@ -65,6 +68,48 @@ def fetch_translation(sura: int):
     return sura, rows
 
 
+def fetch_juz_metadata(juz: int):
+    payload = get_json(METADATA_URL.format(juz=juz))
+    data = payload.get("data") if isinstance(payload, dict) else None
+    ayahs = data.get("ayahs") if isinstance(data, dict) else None
+    if not isinstance(ayahs, list) or not ayahs:
+        raise RuntimeError(f"Unexpected Al Quran Cloud metadata for juz {juz}")
+    return juz, ayahs
+
+
+def normalize_sajda(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    return isinstance(value, dict) and bool(value)
+
+
+def load_structural_metadata():
+    """Load Hafs structural metadata keyed by absolute ayah number."""
+    metadata_by_ayah = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {pool.submit(fetch_juz_metadata, juz): juz for juz in range(1, 31)}
+        for future in as_completed(futures):
+            juz, ayahs = future.result()
+            for item in ayahs:
+                if not isinstance(item, dict):
+                    continue
+                absolute_number = item.get("number")
+                if absolute_number is None:
+                    continue
+                absolute_number = int(absolute_number)
+                hizb_quarter = item.get("hizbQuarter")
+                metadata_by_ayah[absolute_number] = {
+                    "juz": int(item["juz"]) if item.get("juz") is not None else juz,
+                    "hizb": ((int(hizb_quarter) - 1) // 4 + 1) if hizb_quarter is not None else None,
+                    "page": int(item["page"]) if item.get("page") is not None else None,
+                    "hasSajdah": normalize_sajda(item.get("sajda")),
+                }
+
+    if len(metadata_by_ayah) != 6236:
+        raise RuntimeError(f"Expected metadata for 6236 ayahs, got {len(metadata_by_ayah)}")
+    return metadata_by_ayah
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
@@ -81,8 +126,11 @@ def main() -> None:
             sura, rows = future.result()
             translations_by_sura[sura] = rows
 
+    structural_metadata = load_structural_metadata()
+
     surahs = []
     total_ayahs = 0
+    absolute_ayah_number = 0
     for chapter in arabic:
         number = int(chapter["id"])
         verses = chapter.get("verses", [])
@@ -95,13 +143,18 @@ def main() -> None:
         ayahs = []
         for verse in verses:
             ayah_number = int(verse["id"])
+            absolute_ayah_number += 1
             bengali = translations_for_sura.get(ayah_number)
             if bengali is None:
                 raise RuntimeError(f"Missing Bengali translation {number}:{ayah_number}")
+            metadata = structural_metadata.get(absolute_ayah_number)
+            if metadata is None:
+                raise RuntimeError(f"Missing structural metadata for {number}:{ayah_number}")
             ayahs.append({
                 "number": ayah_number,
                 "arabic": verse["text"],
                 "bengali": bengali,
+                **metadata,
             })
         total_ayahs += len(ayahs)
         surahs.append({
@@ -110,11 +163,11 @@ def main() -> None:
             "ayahs": ayahs,
         })
 
-    if total_ayahs != 6236:
+    if total_ayahs != 6236 or absolute_ayah_number != 6236:
         raise RuntimeError(f"Expected 6236 ayahs, got {total_ayahs}")
 
     document = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "generatedAt": "2026-09-10",
         "arabicSource": {
             "name": "Quran JSON",
@@ -128,6 +181,12 @@ def main() -> None:
             "url": "https://quranenc.com/bn/browse/bengali_rwwad",
             "publisher": "Rowwad Translation Center in cooperation with IslamHouse.com",
             "attribution": "Bengali translation of the meanings from QuranEnc.com.",
+        },
+        "structuralMetadataSource": {
+            "name": "Al Quran Cloud API",
+            "version": METADATA_SOURCE_VERSION,
+            "url": "https://api.alquran.cloud/v1",
+            "attribution": "Hafs structural metadata: Juz, Hizb, page and Sajdah markers.",
         },
         "surahs": surahs,
     }
