@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag, e.g. v0.1.0-alpha01'
+        description: 'Release tag, e.g. v0.2.0-alpha01'
         required: true
-        default: 'v0.1.0-alpha01'
+        default: 'v0.2.0-alpha01'
         type: string
       prerelease:
         description: 'Mark release as pre-release'
@@ -34,6 +34,9 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate full Quran content
+        run: python3 scripts/generate_quran_content.py --output feature/quran/src/main/assets/quran_reader.json
 
       - name: Build debug APK
         run: gradle :app:assembleDebug
