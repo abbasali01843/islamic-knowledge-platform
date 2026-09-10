@@ -58,6 +58,7 @@ private fun IslamicKnowledgeApp() {
     )
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var selectedSurah by remember { mutableStateOf<Surah?>(null) }
+    var selectedAyah by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -68,7 +69,10 @@ private fun IslamicKnowledgeApp() {
                         selected = selected == index,
                         onClick = {
                             selected = index
-                            if (index != 1) selectedSurah = null
+                            if (index != 1) {
+                                selectedSurah = null
+                                selectedAyah = null
+                            }
                         },
                         icon = destination.icon,
                         label = { Text(destination.label) },
@@ -83,11 +87,18 @@ private fun IslamicKnowledgeApp() {
                 1 -> {
                     val surah = selectedSurah
                     if (surah == null) {
-                        QuranScreen(onSurahClick = { selectedSurah = it })
+                        QuranScreen(onSurahClick = { clickedSurah, ayah ->
+                            selectedSurah = clickedSurah
+                            selectedAyah = ayah
+                        })
                     } else {
                         QuranReaderScreen(
                             surah = surah,
-                            onBack = { selectedSurah = null },
+                            initialAyah = selectedAyah,
+                            onBack = {
+                                selectedSurah = null
+                                selectedAyah = null
+                            },
                         )
                     }
                 }
@@ -99,10 +110,7 @@ private fun IslamicKnowledgeApp() {
 
 @Composable
 private fun PlaceholderScreen(title: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(title)
     }
 }
