@@ -19,6 +19,16 @@ internal class QuranReaderPreferences(context: Context) {
         return bookmarked
     }
 
+    fun getBookmarks(): Set<String> =
+        preferences.getStringSet(KEY_BOOKMARKS, emptySet()).orEmpty().toSet()
+
+    fun getNote(surahNumber: Int, ayahNumber: Int): String =
+        preferences.getString(noteKey(surahNumber, ayahNumber), "").orEmpty()
+
+    fun saveNote(surahNumber: Int, ayahNumber: Int, note: String) {
+        preferences.edit().putString(noteKey(surahNumber, ayahNumber), note.trim()).apply()
+    }
+
     fun saveLastRead(surahNumber: Int, ayahNumber: Int) {
         preferences.edit()
             .putInt(KEY_LAST_SURAH, surahNumber)
@@ -33,6 +43,8 @@ internal class QuranReaderPreferences(context: Context) {
     }
 
     private fun key(surahNumber: Int, ayahNumber: Int): String = "$surahNumber:$ayahNumber"
+
+    private fun noteKey(surahNumber: Int, ayahNumber: Int): String = "note_${surahNumber}_$ayahNumber"
 
     companion object {
         private const val FILE_NAME = "quran_reader_preferences"
