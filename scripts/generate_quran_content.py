@@ -26,15 +26,41 @@ def get_json(url: str):
         return json.load(response)
 
 
+def _extract_rows(payload):
+    """Normalize QuranEnc responses across API response shapes."""
+    if isinstance(payload, list):
+        return payload
+    if not isinstance(payload, dict):
+        return None
+
+    for key in ("result", "data", "translations"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+        if isinstance(value, dict):
+            nested = _extract_rows(value)
+            if nested is not None:
+                return nested
+
+    # Some API variants return an object keyed by ayah number.
+    if payload and all(str(key).isdigit() for key in payload):
+        rows = []
+        for key, value in payload.items():
+            if isinstance(value, dict):
+                row = dict(value)
+                row.setdefault("aya", int(key))
+                rows.append(row)
+            elif isinstance(value, str):
+                rows.append({"aya": int(key), "translation": value})
+        return rows
+
+    return None
+
+
 def fetch_translation(sura: int):
     payload = get_json(TRANSLATION_URL.format(sura=sura))
-    if isinstance(payload, list):
-        rows = payload
-    elif isinstance(payload, dict):
-        rows = payload.get("result", payload.get("data", []))
-    else:
-        rows = []
-    if not isinstance(rows, list):
+    rows = _extract_rows(payload)
+    if not isinstance(rows, list) or not rows:
         raise RuntimeError(f"Unexpected QuranEnc response for surah {sura}")
     return sura, rows
 
@@ -60,11 +86,12 @@ def main() -> None:
     for chapter in arabic:
         number = int(chapter["id"])
         verses = chapter.get("verses", [])
-        translations_for_sura = {
-            int(item["aya"]): item.get("translation", "")
-            for item in translations_by_sura[number]
-            if isinstance(item, dict) and "aya" in item
-        }
+        translations_for_sura = {}
+        for item in translations_by_sura[number]:
+            if not isinstance(item, dict) or "aya" not in item:
+                continue
+            translations_for_sura[int(item["aya"])] = item.get("translation", "")
+
         ayahs = []
         for verse in verses:
             ayah_number = int(verse["id"])
