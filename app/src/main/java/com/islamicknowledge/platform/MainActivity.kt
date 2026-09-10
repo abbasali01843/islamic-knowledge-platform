@@ -30,6 +30,7 @@ import com.islamicknowledge.platform.core.model.quran.Surah
 import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
+import com.islamicknowledge.platform.feature.quran.QuranSearchScreen
 
 private data class Destination(
     val label: String,
@@ -102,6 +103,11 @@ private fun IslamicKnowledgeApp() {
                         )
                     }
                 }
+                3 -> QuranSearchScreen(onResultClick = { clickedSurah, ayah ->
+                    selectedSurah = clickedSurah
+                    selectedAyah = ayah
+                    selected = 1
+                })
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
