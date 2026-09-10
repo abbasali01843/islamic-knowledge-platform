@@ -16,8 +16,8 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 ARABIC_URL = "https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/quran.json"
-TRANSLATION_LIST_URL = "https://quranenc.com/api/v1/translations/list/bn?localization=bn"
 TRANSLATION_URL = "https://quranenc.com/api/v1/translation/sura/bengali_rwwad/{sura}"
+BENGALI_VERSION = "1.1.2"
 
 
 def get_json(url: str):
@@ -28,7 +28,12 @@ def get_json(url: str):
 
 def fetch_translation(sura: int):
     payload = get_json(TRANSLATION_URL.format(sura=sura))
-    rows = payload.get("result", payload)
+    if isinstance(payload, list):
+        rows = payload
+    elif isinstance(payload, dict):
+        rows = payload.get("result", payload.get("data", []))
+    else:
+        rows = []
     if not isinstance(rows, list):
         raise RuntimeError(f"Unexpected QuranEnc response for surah {sura}")
     return sura, rows
@@ -42,12 +47,6 @@ def main() -> None:
     arabic = get_json(ARABIC_URL)
     if not isinstance(arabic, list) or len(arabic) != 114:
         raise RuntimeError("Arabic Quran source did not contain 114 surahs")
-
-    translation_list = get_json(TRANSLATION_LIST_URL)
-    translations = translation_list.get("result", translation_list)
-    rowwad = next((item for item in translations if item.get("key") == "bengali_rwwad"), None)
-    if not rowwad:
-        raise RuntimeError("bengali_rwwad translation was not found in QuranEnc")
 
     translations_by_sura = {}
     with ThreadPoolExecutor(max_workers=8) as pool:
@@ -64,6 +63,7 @@ def main() -> None:
         translations_for_sura = {
             int(item["aya"]): item.get("translation", "")
             for item in translations_by_sura[number]
+            if isinstance(item, dict) and "aya" in item
         }
         ayahs = []
         for verse in verses:
@@ -97,7 +97,7 @@ def main() -> None:
         },
         "bengaliSource": {
             "name": "QuranEnc Bengali Rowwad",
-            "version": rowwad.get("version", "1.1.2"),
+            "version": BENGALI_VERSION,
             "url": "https://quranenc.com/bn/browse/bengali_rwwad",
             "publisher": "Rowwad Translation Center in cooperation with IslamHouse.com",
             "attribution": "Bengali translation of the meanings from QuranEnc.com.",
