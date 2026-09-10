@@ -132,10 +132,17 @@ fun QuranReaderScreen(
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
+    val repository = remember(context) { QuranReaderRepository(context) }
     val preferences = remember(context) { QuranReaderPreferences(context) }
-    val allAyahs = quranReaderAyahs(surah.number)
+    val allAyahs = remember(repository, surah.number) { repository.ayahsForSurah(surah.number) }
     var query by remember { mutableStateOf("") }
-    var bookmarkedKeys by remember { mutableStateOf(allAyahs.filter { preferences.isBookmarked(surah.number, it.number) }.map { it.number }.toSet()) }
+    var bookmarkedKeys by remember {
+        mutableStateOf(
+            allAyahs.filter { preferences.isBookmarked(surah.number, it.number) }
+                .map { it.number }
+                .toSet(),
+        )
+    }
     val ayahs = allAyahs.filter {
         query.isBlank() || it.arabic.contains(query, ignoreCase = true) || it.bengali.contains(query, ignoreCase = true)
     }
@@ -159,6 +166,12 @@ fun QuranReaderScreen(
             }
         }
 
+        Text(
+            text = repository.sourceAttribution(),
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+
         if (allAyahs.isNotEmpty()) {
             OutlinedTextField(
                 value = query,
@@ -180,7 +193,7 @@ fun QuranReaderScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = if (allAyahs.isEmpty()) "এই সূরার পূর্ণ আয়াত ডেটা পরবর্তী কনটেন্ট প্যাকেজে যুক্ত হবে।" else "এই খোঁজার সাথে কোনো আয়াত মেলেনি।",
+                    text = if (allAyahs.isEmpty()) "এই সূরার পূর্ণ আয়াত ডেটা কনটেন্ট প্যাকেজে পাওয়া যায়নি।" else "এই খোঁজার সাথে কোনো আয়াত মেলেনি।",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
