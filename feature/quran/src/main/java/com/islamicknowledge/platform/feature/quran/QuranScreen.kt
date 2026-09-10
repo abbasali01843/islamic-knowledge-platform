@@ -131,7 +131,7 @@ fun QuranReaderScreen(
     surah: Surah,
     onBack: () -> Unit,
 ) {
-    val ayahs = if (surah.number == 1) alFatihahAyahs else emptyList()
+    val ayahs = quranReaderAyahs(surah.number)
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -161,7 +161,7 @@ fun QuranReaderScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "এই সূরার আয়াত ডেটা পরবর্তী কনটেন্ট প্যাকেজে যুক্ত হবে।",
+                    text = "এই সূরার পূর্ণ আয়াত ডেটা পরবর্তী কনটেন্ট প্যাকেজে যুক্ত হবে।",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
@@ -197,19 +197,3 @@ fun QuranReaderScreen(
         }
     }
 }
-
-private data class ReaderAyah(
-    val number: Int,
-    val arabic: String,
-    val bengali: String,
-)
-
-private val alFatihahAyahs = listOf(
-    ReaderAyah(1, "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ", "পরম করুণাময় অতি দয়ালু আল্লাহর নামে।"),
-    ReaderAyah(2, "ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ", "সকল প্রশংসা কেবল আল্লাহর জন্য, যিনি সৃষ্টিকুলের রব।"),
-    ReaderAyah(3, "ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ", "(যিনি) পরম করুণাময়, অতি দয়ালু।"),
-    ReaderAyah(4, "مَٰلِكِ يَوۡمِ ٱلدِّينِ", "(যিনি) বিচার দিবসের মালিক।"),
-    ReaderAyah(5, "إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ", "আমরা শুধু আপনারই ‘ইবাদাত করি এবং শুধু আপনার নিকটই সাহায্য চাই।"),
-    ReaderAyah(6, "ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ", "আপনি আমাদেরকে সরল পথের হিদায়াত দিন।"),
-    ReaderAyah(7, "صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ", "তাদের পথ, যাদেরকে আপনি নি‘আমত দিয়েছেন। তাদের পথ নয়, যাদের ওপর আপনার ক্রোধ নিপতিত হয়েছে এবং যারা পথভ্রষ্ট হয়ে গেছে।"),
-)
