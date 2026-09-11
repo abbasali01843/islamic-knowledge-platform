@@ -33,19 +33,8 @@ import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
 import com.islamicknowledge.platform.feature.quran.QuranSearchScreen
 
-private enum class AppTab(
-    val label: String,
-    val index: Int,
-) {
-    HOME("হোম", 0),
-    QURAN("কুরআন", 1),
-    HADITH("হাদিস", 2),
-    SEARCH("খুঁজুন", 3),
-    MORE("আরও", 4),
-}
-
 private data class Destination(
-    val tab: AppTab,
+    val label: String,
     val icon: @Composable () -> Unit,
 )
 
@@ -63,24 +52,25 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun IslamicKnowledgeApp() {
     val destinations = listOf(
-        Destination(AppTab.HOME) { Icon(Icons.Rounded.Home, contentDescription = null) },
-        Destination(AppTab.QURAN) { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
-        Destination(AppTab.HADITH) { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
-        Destination(AppTab.SEARCH) { Icon(Icons.Rounded.Search, contentDescription = null) },
-        Destination(AppTab.MORE) { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
+        Destination("হোম") { Icon(Icons.Rounded.Home, contentDescription = null) },
+        Destination("কুরআন") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
+        Destination("হাদিস") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
+        Destination("খুঁজুন") { Icon(Icons.Rounded.Search, contentDescription = null) },
+        Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
-    var selected by rememberSaveable { mutableIntStateOf(AppTab.HOME.index) }
+    var selected by rememberSaveable { mutableIntStateOf(0) }
     var selectedSurah by remember { mutableStateOf<Surah?>(null) }
     var selectedAyah by remember { mutableStateOf<Int?>(null) }
+    val isReaderOpen = selected == 1 && selectedSurah != null
 
     fun openQuran() {
-        selected = AppTab.QURAN.index
+        selected = 1
         selectedSurah = null
         selectedAyah = null
     }
 
-    fun openTab(tab: AppTab) {
-        selected = tab.index
+    fun openPlaceholder(index: Int) {
+        selected = index
         selectedSurah = null
         selectedAyah = null
     }
@@ -88,33 +78,44 @@ private fun IslamicKnowledgeApp() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            NavigationBar {
-                destinations.forEach { destination ->
-                    NavigationBarItem(
-                        selected = selected == destination.tab.index,
-                        onClick = { openTab(destination.tab) },
-                        icon = destination.icon,
-                        label = { Text(destination.tab.label) },
-                    )
+            if (!isReaderOpen) {
+                NavigationBar {
+                    destinations.forEachIndexed { index, destination ->
+                        NavigationBarItem(
+                            selected = selected == index,
+                            onClick = {
+                                selected = index
+                                if (index != 1) {
+                                    selectedSurah = null
+                                    selectedAyah = null
+                                }
+                            },
+                            icon = destination.icon,
+                            label = { Text(destination.label) },
+                        )
+                    }
                 }
             }
         },
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(if (isReaderOpen) androidx.compose.foundation.layout.PaddingValues() else paddingValues),
+        ) {
             when (selected) {
-                AppTab.HOME.index -> HomeScreen(
+                0 -> HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     onQuickActionClick = { destination ->
                         when (destination) {
                             HomeDestination.QURAN -> openQuran()
-                            HomeDestination.HADITH -> openTab(AppTab.HADITH)
+                            HomeDestination.HADITH -> openPlaceholder(2)
                             HomeDestination.PRAYER,
-                            HomeDestination.DUA -> openTab(AppTab.MORE)
+                            HomeDestination.DUA -> openPlaceholder(4)
                         }
                     },
                 )
-
-                AppTab.QURAN.index -> {
+                1 -> {
                     val surah = selectedSurah
                     if (surah == null) {
                         QuranScreen(onSurahClick = { clickedSurah, ayah ->
@@ -132,15 +133,12 @@ private fun IslamicKnowledgeApp() {
                         )
                     }
                 }
-
-                AppTab.SEARCH.index -> QuranSearchScreen(onResultClick = { clickedSurah, ayah ->
+                3 -> QuranSearchScreen(onResultClick = { clickedSurah, ayah ->
                     selectedSurah = clickedSurah
                     selectedAyah = ayah
-                    selected = AppTab.QURAN.index
+                    selected = 1
                 })
-
-                AppTab.HADITH.index -> PlaceholderScreen("হাদিস")
-                AppTab.MORE.index -> PlaceholderScreen("আরও")
+                else -> PlaceholderScreen(destinations[selected].label)
             }
         }
     }
