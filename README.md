@@ -69,6 +69,7 @@ The Quran milestone is currently under active development. The content pipeline 
 - Copy and Android share actions
 - Arabic/Bengali display toggles
 - Reader font-size controls
+- Reader display choices and font scale persisted locally
 - Juz, Hizb and page metadata parsing/display
 - Sajdah-ayah indication
 - Focused full-screen Quran reader navigation
@@ -78,11 +79,11 @@ The Quran milestone is currently under active development. The content pipeline 
 
 ### Still required before `v0.2.0-alpha`
 
-- Complete Quran reader UX polish and interaction review
-- Persist reader display preferences where appropriate
-- Improve navigation/state restoration and edge-to-edge handling
-- Search UX refinement and empty/loading/error states
-- Bookmark/notes management polish
+- Final reader UX and interaction polish
+- Navigation and state-restoration hardening
+- Edge-to-edge/insets review on Android 15+
+- Search loading, empty, and error states
+- Bookmark and notes management screens/flows
 - Juz/Hizb/page navigation UI rather than metadata only
 - Accessibility and small-screen/large-screen layout review
 - Arabic typography/rendering review on real devices
@@ -150,9 +151,9 @@ Religious content is treated separately from application source code. Every bund
 
 **Published release:** `v0.1.0-alpha01` — Foundation  
 **Current development:** `v0.2.0-alpha` — Quran  
-**Current milestone estimate:** **~70% complete**
+**Current milestone estimate:** **~75% complete**
 
-The foundation is complete and the Quran content/build pipeline is green. The remaining work is concentrated in reader UX polish, navigation for Quran indexes, accessibility/adaptive layout, real-device QA and release hardening.
+The foundation is complete and the Quran content/build pipeline is green. Reader preferences and note-refresh behavior are now hardened. The remaining work is concentrated in reader UX polish, Quran index navigation, accessibility/adaptive layout, real-device QA and release hardening.
 
 See [`CHANGE.md`](CHANGE.md) for the running development report and milestone history.
 
