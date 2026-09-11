@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.islamicknowledge.platform.core.design.IslamicKnowledgeTheme
 import com.islamicknowledge.platform.core.model.quran.Surah
+import com.islamicknowledge.platform.feature.home.HomeDestination
 import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
@@ -52,14 +53,26 @@ class MainActivity : ComponentActivity() {
 private fun IslamicKnowledgeApp() {
     val destinations = listOf(
         Destination("হোম") { Icon(Icons.Rounded.Home, contentDescription = null) },
-        Destination("কুরআন") { Icon(Icons.Rounded.MenuBook, contentDescription = null) },
-        Destination("হাদিস") { Icon(Icons.Rounded.MenuBook, contentDescription = null) },
+        Destination("কুরআন") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
+        Destination("হাদিস") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
         Destination("খুঁজুন") { Icon(Icons.Rounded.Search, contentDescription = null) },
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var selectedSurah by remember { mutableStateOf<Surah?>(null) }
     var selectedAyah by remember { mutableStateOf<Int?>(null) }
+
+    fun openQuran() {
+        selected = 1
+        selectedSurah = null
+        selectedAyah = null
+    }
+
+    fun openPlaceholder(index: Int) {
+        selected = index
+        selectedSurah = null
+        selectedAyah = null
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -84,7 +97,17 @@ private fun IslamicKnowledgeApp() {
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             when (selected) {
-                0 -> HomeScreen(modifier = Modifier.fillMaxSize())
+                0 -> HomeScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    onQuickActionClick = { destination ->
+                        when (destination) {
+                            HomeDestination.QURAN -> openQuran()
+                            HomeDestination.HADITH -> openPlaceholder(2)
+                            HomeDestination.PRAYER,
+                            HomeDestination.DUA -> openPlaceholder(4)
+                        }
+                    },
+                )
                 1 -> {
                     val surah = selectedSurah
                     if (surah == null) {
