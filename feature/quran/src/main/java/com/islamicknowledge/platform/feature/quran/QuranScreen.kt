@@ -16,8 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.ContentCopy
@@ -192,11 +192,12 @@ fun QuranReaderScreen(
     val allAyahs = remember(repository, surah.number) { repository.ayahsForSurah(surah.number) }
     val listState = rememberLazyListState()
     var query by remember { mutableStateOf("") }
-    var showArabic by remember { mutableStateOf(true) }
-    var showBengali by remember { mutableStateOf(true) }
-    var fontScale by remember { mutableStateOf(1f) }
+    var showArabic by remember(preferences) { mutableStateOf(preferences.getShowArabic()) }
+    var showBengali by remember(preferences) { mutableStateOf(preferences.getShowBengali()) }
+    var fontScale by remember(preferences) { mutableStateOf(preferences.getFontScale()) }
     var bookmarkedKeys by remember { mutableStateOf(allAyahs.filter { preferences.isBookmarked(surah.number, it.number) }.map { it.number }.toSet()) }
     var noteAyah by remember { mutableStateOf<ReaderAyah?>(null) }
+    var noteVersion by remember { mutableStateOf(0) }
     val ayahs = allAyahs.filter {
         query.isBlank() || it.arabic.contains(query, ignoreCase = true) || it.bengali.contains(query, ignoreCase = true)
     }
@@ -209,7 +210,7 @@ fun QuranReaderScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.Rounded.ArrowBack, contentDescription = "ফিরে যান") }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "ফিরে যান") }
             Column(modifier = Modifier.weight(1f)) {
                 Text(surah.nameBengali, style = MaterialTheme.typography.titleLarge)
                 Text("${surah.nameArabic} • ${surah.ayahCount} আয়াত", style = MaterialTheme.typography.bodySmall)
@@ -221,11 +222,31 @@ fun QuranReaderScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            FilterChip(selected = showArabic, onClick = { showArabic = !showArabic }, label = { Text("عربي") })
-            FilterChip(selected = showBengali, onClick = { showBengali = !showBengali }, label = { Text("বাংলা") })
-            IconButton(onClick = { fontScale = (fontScale - 0.1f).coerceAtLeast(0.8f) }) { Icon(Icons.Rounded.Remove, contentDescription = "ফন্ট ছোট") }
+            FilterChip(
+                selected = showArabic,
+                onClick = {
+                    showArabic = !showArabic
+                    preferences.setShowArabic(showArabic)
+                },
+                label = { Text("عربي") },
+            )
+            FilterChip(
+                selected = showBengali,
+                onClick = {
+                    showBengali = !showBengali
+                    preferences.setShowBengali(showBengali)
+                },
+                label = { Text("বাংলা") },
+            )
+            IconButton(onClick = {
+                fontScale = (fontScale - 0.1f).coerceAtLeast(0.8f)
+                preferences.setFontScale(fontScale)
+            }) { Icon(Icons.Rounded.Remove, contentDescription = "ফন্ট ছোট") }
             Text("${(fontScale * 100).toInt()}%", style = MaterialTheme.typography.labelSmall)
-            IconButton(onClick = { fontScale = (fontScale + 0.1f).coerceAtMost(1.5f) }) { Icon(Icons.Rounded.Add, contentDescription = "ফন্ট বড়") }
+            IconButton(onClick = {
+                fontScale = (fontScale + 0.1f).coerceAtMost(1.5f)
+                preferences.setFontScale(fontScale)
+            }) { Icon(Icons.Rounded.Add, contentDescription = "ফন্ট বড়") }
         }
         OutlinedTextField(
             value = query,
@@ -243,7 +264,7 @@ fun QuranReaderScreen(
             LazyColumn(state = listState, contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(ayahs, key = { it.number }) { ayah ->
                     val bookmarked = ayah.number in bookmarkedKeys
-                    val note = preferences.getNote(surah.number, ayah.number)
+                    val note = remember(noteVersion, surah.number, ayah.number) { preferences.getNote(surah.number, ayah.number) }
                     val text = buildString {
                         append("${surah.nameBengali} ${surah.number}:${ayah.number}\n")
                         if (showArabic) append("${ayah.arabic}\n")
@@ -292,7 +313,7 @@ fun QuranReaderScreen(
             onDismissRequest = { noteAyah = null },
             title = { Text("আয়াত ${ayah.number}-এর নোট") },
             text = { OutlinedTextField(value = noteText, onValueChange = { noteText = it }, modifier = Modifier.fillMaxWidth(), minLines = 3, label = { Text("আপনার নোট") }) },
-            confirmButton = { TextButton(onClick = { preferences.saveNote(surah.number, ayah.number, noteText); noteAyah = null }) { Text("সংরক্ষণ") } },
+            confirmButton = { TextButton(onClick = { preferences.saveNote(surah.number, ayah.number, noteText); noteVersion++; noteAyah = null }) { Text("সংরক্ষণ") } },
             dismissButton = { TextButton(onClick = { noteAyah = null }) { Text("বাতিল") } },
         )
     }
