@@ -3,9 +3,13 @@ package com.islamicknowledge.platform
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Home
@@ -19,8 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +43,7 @@ private data class Destination(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             IslamicKnowledgeTheme {
                 IslamicKnowledgeApp()
@@ -58,21 +61,29 @@ private fun IslamicKnowledgeApp() {
         Destination("খুঁজুন") { Icon(Icons.Rounded.Search, contentDescription = null) },
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
+
     var selected by rememberSaveable { mutableIntStateOf(0) }
-    var selectedSurah by remember { mutableStateOf<Surah?>(null) }
-    var selectedAyah by remember { mutableStateOf<Int?>(null) }
+    var selectedSurahNumber by rememberSaveable { mutableIntStateOf(0) }
+    var selectedAyah by rememberSaveable { mutableIntStateOf(0) }
+    val selectedSurah = quranSurahs.firstOrNull { it.number == selectedSurahNumber }
     val isReaderOpen = selected == 1 && selectedSurah != null
 
     fun openQuran() {
         selected = 1
-        selectedSurah = null
-        selectedAyah = null
+        selectedSurahNumber = 0
+        selectedAyah = 0
     }
 
     fun openPlaceholder(index: Int) {
         selected = index
-        selectedSurah = null
-        selectedAyah = null
+        selectedSurahNumber = 0
+        selectedAyah = 0
+    }
+
+    fun openSurah(surah: Surah, ayah: Int?) {
+        selected = 1
+        selectedSurahNumber = surah.number
+        selectedAyah = ayah ?: 0
     }
 
     Scaffold(
@@ -86,8 +97,8 @@ private fun IslamicKnowledgeApp() {
                             onClick = {
                                 selected = index
                                 if (index != 1) {
-                                    selectedSurah = null
-                                    selectedAyah = null
+                                    selectedSurahNumber = 0
+                                    selectedAyah = 0
                                 }
                             },
                             icon = destination.icon,
@@ -101,7 +112,13 @@ private fun IslamicKnowledgeApp() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(if (isReaderOpen) androidx.compose.foundation.layout.PaddingValues() else paddingValues),
+                .then(
+                    if (isReaderOpen) {
+                        Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
+                    } else {
+                        Modifier.padding(paddingValues)
+                    },
+                ),
         ) {
             when (selected) {
                 0 -> HomeScreen(
@@ -118,26 +135,19 @@ private fun IslamicKnowledgeApp() {
                 1 -> {
                     val surah = selectedSurah
                     if (surah == null) {
-                        QuranScreen(onSurahClick = { clickedSurah, ayah ->
-                            selectedSurah = clickedSurah
-                            selectedAyah = ayah
-                        })
+                        QuranScreen(onSurahClick = ::openSurah)
                     } else {
                         QuranReaderScreen(
                             surah = surah,
-                            initialAyah = selectedAyah,
+                            initialAyah = selectedAyah.takeIf { it > 0 },
                             onBack = {
-                                selectedSurah = null
-                                selectedAyah = null
+                                selectedSurahNumber = 0
+                                selectedAyah = 0
                             },
                         )
                     }
                 }
-                3 -> QuranSearchScreen(onResultClick = { clickedSurah, ayah ->
-                    selectedSurah = clickedSurah
-                    selectedAyah = ayah
-                    selected = 1
-                })
+                3 -> QuranSearchScreen(onResultClick = ::openSurah)
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
