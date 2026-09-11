@@ -2,16 +2,16 @@
 
 > **Bengali-first · Offline-first · Source-backed Islamic knowledge & practice for Android**
 
-[![Android CI](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml/badge.svg)](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml)
+[![Android CI](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml/badge.svg)](https://github.com/abbasali0183/islamic-knowledge-platform/actions/workflows/android-ci.yml)
 [![Latest Release](https://img.shields.io/github/v/release/abbasali01843/islamic-knowledge-platform?include_prereleases&label=latest%20release)](https://github.com/abbasali01843/islamic-knowledge-platform/releases)
 
 ## 📱 Download
 
-### Latest test release — `v0.1.0-alpha01`
+### Latest published release — `v0.1.0-alpha01`
 
 **[⬇️ Download APK](https://github.com/abbasali01843/islamic-knowledge-platform/releases/download/v0.1.0-alpha01/islamic-knowledge-platform-debug.apk)**
 
-This is an **alpha testing build**. It is suitable for testing the current foundation and early app experience. Future releases will add the full Quran, Hadith, Salah, Qibla, Dua, Ramadan and other modules.
+This published alpha contains the foundation release. The current `main` branch is ahead of that release and is actively building the Quran milestone; a new APK will be published only after the milestone passes CI and device QA.
 
 [View release notes & SHA-256](https://github.com/abbasali01843/islamic-knowledge-platform/releases/tag/v0.1.0-alpha01)
 
@@ -25,7 +25,6 @@ Build a trustworthy Islamic knowledge platform where the internet enhances the e
 
 - **Offline-first** — core knowledge and practice should remain usable without internet.
 - **Source-backed** — religious content should be traceable to identifiable sources.
-- **License-aware** — unclear licensing means content is not bundled until rights are resolved.
 - **Bengali-first** — Bengali is a primary user experience, not an afterthought.
 - **Bangladesh-first, globally capable** — local prayer, Ramadan and calendar needs with configurable global support.
 - **Privacy-friendly** — most core features should work without requiring an account.
@@ -50,6 +49,48 @@ Build a trustworthy Islamic knowledge platform where the internet enhances the e
 | Global Search | Search across Quran, Hadith, Dua and knowledge content |
 | Personal Dashboard | Reading/learning progress and personal activity |
 | Notifications | Prayer, Sehri/Iftar, Jumu'ah, adhkar and daily content reminders |
+
+## 📖 Quran milestone — `v0.2.0-alpha`
+
+The Quran milestone is currently under active development. The content pipeline has been verified in GitHub Actions with **114 surahs and 6,236 ayahs** generated into the build.
+
+### Implemented so far
+
+- 114-surah Bengali/Arabic catalog
+- Offline Quran content package generated during CI
+- Bengali Rowwad translation source metadata
+- Arabic text + Bengali translation reader
+- Surah list and Bengali/English/Arabic filtering
+- In-surah Arabic/Bengali search
+- Quran-wide search entry point
+- Bookmark add/remove and bookmark list
+- Last-read position and Resume flow
+- Per-ayah notes stored locally
+- Copy and Android share actions
+- Arabic/Bengali display toggles
+- Reader font-size controls
+- Juz, Hizb and page metadata parsing/display
+- Sajdah-ayah indication
+- Focused full-screen Quran reader navigation
+- Islamic green/warm-neutral Material 3 design direction
+- Bengali-first typography and component shapes
+- CI retry/backoff handling for Quran content API rate limits
+
+### Still required before `v0.2.0-alpha`
+
+- Complete Quran reader UX polish and interaction review
+- Persist reader display preferences where appropriate
+- Improve navigation/state restoration and edge-to-edge handling
+- Search UX refinement and empty/loading/error states
+- Bookmark/notes management polish
+- Juz/Hizb/page navigation UI rather than metadata only
+- Accessibility and small-screen/large-screen layout review
+- Arabic typography/rendering review on real devices
+- Offline installation and full 114-surah content QA
+- Device testing of scrolling, search, bookmark, notes, copy/share and resume
+- Final CI verification and release APK build
+
+**Important:** a green CI build does not by itself mean the Quran milestone is release-ready. The final APK must pass real-device QA first.
 
 ## 🏗️ Architecture
 
@@ -79,7 +120,7 @@ The core principle is:
 
 Offline use is intended for core knowledge and practice. Online connectivity is reserved for licensed updates, optional downloads/synchronization and future source-grounded services.
 
-## 📚 Content provenance & licensing
+## 📚 Content provenance
 
 Religious content is treated separately from application source code. Every bundled or synchronized source should record:
 
@@ -92,12 +133,10 @@ Religious content is treated separately from application source code. Every bund
 - Verification status
 - Verification date
 
-A dataset being available on GitHub does **not** automatically mean its contents may be redistributed in the app. Unclear licensing means the content is not bundled until the rights are resolved.
-
 ## 🗺️ Release roadmap
 
 - `v0.1.0-alpha` — **Foundation** ✅
-- `v0.2.0-alpha` — **Quran** 🚧
+- `v0.2.0-alpha` — **Quran** 🚧 active development
 - `v0.3.0-alpha` — **Hadith**
 - `v0.4.0-alpha` — **Salah + Qibla**
 - `v0.5.0-beta` — **Ramadan + Dua + Athkar**
@@ -109,11 +148,13 @@ A dataset being available on GitHub does **not** automatically mean its contents
 
 ## 📊 Current status
 
-**Current release: `v0.1.0-alpha01` — Foundation**
+**Published release:** `v0.1.0-alpha01` — Foundation  
+**Current development:** `v0.2.0-alpha` — Quran  
+**Current milestone estimate:** **~70% complete**
 
-The current release establishes the Android project structure, reusable design system, navigation shell, offline-first architecture, content provenance rules and automated CI/release workflow.
+The foundation is complete and the Quran content/build pipeline is green. The remaining work is concentrated in reader UX polish, navigation for Quran indexes, accessibility/adaptive layout, real-device QA and release hardening.
 
-The next milestone is **Quran**, with a focus on license-verified, source-backed content rather than simply bundling an arbitrary online dataset.
+See [`CHANGE.md`](CHANGE.md) for the running development report and milestone history.
 
 ## 🛠️ Development workflow
 
@@ -134,4 +175,5 @@ The application source license and third-party content licenses are documented s
 **Project:** Islamic Knowledge Platform  
 **Package:** `com.islamicknowledge.platform`  
 **Platform:** Android 8.0+  
-**Current version:** `0.1.0-alpha01`
+**Published version:** `0.1.0-alpha01`  
+**Development milestone:** `0.2.0-alpha`
