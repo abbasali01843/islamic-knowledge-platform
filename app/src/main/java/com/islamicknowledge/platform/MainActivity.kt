@@ -34,7 +34,7 @@ import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
 import com.islamicknowledge.platform.feature.quran.QuranSearchScreen
-import com.islamicknowledge.platform.feature.quran.quranSurahs
+import com.islamicknowledge.platform.feature.quran.findQuranSurah
 
 private data class Destination(val label: String, val icon: @Composable () -> Unit)
 
@@ -58,7 +58,7 @@ private fun IslamicKnowledgeApp() {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var selectedSurahNumber by rememberSaveable { mutableIntStateOf(0) }
     var selectedAyah by rememberSaveable { mutableIntStateOf(0) }
-    val selectedSurah = quranSurahs.firstOrNull { it.number == selectedSurahNumber }
+    val selectedSurah = findQuranSurah(selectedSurahNumber)
     val isReaderOpen = selected == 1 && selectedSurah != null
 
     fun openQuran() { selected = 1; selectedSurahNumber = 0; selectedAyah = 0 }
