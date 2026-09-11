@@ -73,6 +73,9 @@ The Quran milestone is currently under active development. The content pipeline 
 - Juz, Hizb and page metadata parsing/display
 - Sajdah-ayah indication
 - Focused full-screen Quran reader navigation
+- Navigation state restoration for selected tab/surah/ayah
+- Android edge-to-edge setup with safe-drawing insets for the full-screen reader
+- Refined Quran search with trimmed queries, clear action, and explicit empty/idle states
 - Islamic green/warm-neutral Material 3 design direction
 - Bengali-first typography and component shapes
 - CI retry/backoff handling for Quran content API rate limits
@@ -80,9 +83,6 @@ The Quran milestone is currently under active development. The content pipeline 
 ### Still required before `v0.2.0-alpha`
 
 - Final reader UX and interaction polish
-- Navigation and state-restoration hardening
-- Edge-to-edge/insets review on Android 15+
-- Search loading, empty, and error states
 - Bookmark and notes management screens/flows
 - Juz/Hizb/page navigation UI rather than metadata only
 - Accessibility and small-screen/large-screen layout review
@@ -151,9 +151,9 @@ Religious content is treated separately from application source code. Every bund
 
 **Published release:** `v0.1.0-alpha01` — Foundation  
 **Current development:** `v0.2.0-alpha` — Quran  
-**Current milestone estimate:** **~75% complete**
+**Current milestone estimate:** **~80% complete**
 
-The foundation is complete and the Quran content/build pipeline is green. Reader preferences and note-refresh behavior are now hardened. The remaining work is concentrated in reader UX polish, Quran index navigation, accessibility/adaptive layout, real-device QA and release hardening.
+The Quran reader now has stronger state restoration, Android edge-to-edge handling, and clearer offline search states. Remaining work is concentrated in bookmark/notes management, index navigation, accessibility/adaptive layout, real-device typography/content QA and release hardening.
 
 See [`CHANGE.md`](CHANGE.md) for the running development report and milestone history.
 
