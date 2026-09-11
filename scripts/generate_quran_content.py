@@ -12,8 +12,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ARABIC_URL = "https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/quran.json"
@@ -21,12 +24,38 @@ TRANSLATION_URL = "https://quranenc.com/api/v1/translation/sura/bengali_rwwad/{s
 METADATA_URL = "https://api.alquran.cloud/v1/juz/{juz}/quran-uthmani"
 BENGALI_VERSION = "1.1.2"
 METADATA_SOURCE_VERSION = "Al Quran Cloud API / Hafs metadata"
+MAX_RETRIES = 5
 
 
 def get_json(url: str):
-    request = Request(url, headers={"User-Agent": "IslamicKnowledgePlatform/0.2"})
-    with urlopen(request, timeout=45) as response:
-        return json.load(response)
+    last_error = None
+    for attempt in range(MAX_RETRIES):
+        request = Request(
+            url,
+            headers={
+                "User-Agent": "IslamicKnowledgePlatform/0.2 (+https://github.com/abbasali01843/islamic-knowledge-platform)",
+                "Accept": "application/json",
+            },
+        )
+        try:
+            with urlopen(request, timeout=45) as response:
+                return json.load(response)
+        except HTTPError as error:
+            last_error = error
+            if error.code not in {429, 500, 502, 503, 504} or attempt == MAX_RETRIES - 1:
+                raise
+            retry_after = error.headers.get("Retry-After")
+            try:
+                delay = float(retry_after) if retry_after else 2 ** attempt
+            except ValueError:
+                delay = 2 ** attempt
+            time.sleep(min(delay, 20) + random.uniform(0.1, 0.8))
+        except (URLError, TimeoutError) as error:
+            last_error = error
+            if attempt == MAX_RETRIES - 1:
+                raise
+            time.sleep(min(2 ** attempt, 20) + random.uniform(0.1, 0.8))
+    raise RuntimeError(f"Unable to fetch JSON from {url}: {last_error}")
 
 
 def _extract_rows(payload):
@@ -86,7 +115,9 @@ def normalize_sajda(value) -> bool:
 def load_structural_metadata():
     """Load Hafs structural metadata keyed by absolute ayah number."""
     metadata_by_ayah = {}
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    # Keep concurrency deliberately low: Al Quran Cloud can rate-limit bursts
+    # of 30 simultaneous Juz requests with HTTP 429.
+    with ThreadPoolExecutor(max_workers=3) as pool:
         futures = {pool.submit(fetch_juz_metadata, juz): juz for juz in range(1, 31)}
         for future in as_completed(futures):
             juz, ayahs = future.result()
