@@ -34,21 +34,15 @@ import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
 import com.islamicknowledge.platform.feature.quran.QuranSearchScreen
+import com.islamicknowledge.platform.feature.quran.findQuranSurah
 
-private data class Destination(
-    val label: String,
-    val icon: @Composable () -> Unit,
-)
+private data class Destination(val label: String, val icon: @Composable () -> Unit)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            IslamicKnowledgeTheme {
-                IslamicKnowledgeApp()
-            }
-        }
+        setContent { IslamicKnowledgeTheme { IslamicKnowledgeApp() } }
     }
 }
 
@@ -61,64 +55,39 @@ private fun IslamicKnowledgeApp() {
         Destination("খুঁজুন") { Icon(Icons.Rounded.Search, contentDescription = null) },
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
-
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var selectedSurahNumber by rememberSaveable { mutableIntStateOf(0) }
     var selectedAyah by rememberSaveable { mutableIntStateOf(0) }
-    val selectedSurah = quranSurahs.firstOrNull { it.number == selectedSurahNumber }
+    val selectedSurah = findQuranSurah(selectedSurahNumber)
     val isReaderOpen = selected == 1 && selectedSurah != null
 
-    fun openQuran() {
-        selected = 1
-        selectedSurahNumber = 0
-        selectedAyah = 0
-    }
-
-    fun openPlaceholder(index: Int) {
-        selected = index
-        selectedSurahNumber = 0
-        selectedAyah = 0
-    }
-
-    fun openSurah(surah: Surah, ayah: Int?) {
-        selected = 1
-        selectedSurahNumber = surah.number
-        selectedAyah = ayah ?: 0
-    }
+    fun openQuran() { selected = 1; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openSurah(surah: Surah, ayah: Int?) { selected = 1; selectedSurahNumber = surah.number; selectedAyah = ayah ?: 0 }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (!isReaderOpen) {
-                NavigationBar {
-                    destinations.forEachIndexed { index, destination ->
-                        NavigationBarItem(
-                            selected = selected == index,
-                            onClick = {
-                                selected = index
-                                if (index != 1) {
-                                    selectedSurahNumber = 0
-                                    selectedAyah = 0
-                                }
-                            },
-                            icon = destination.icon,
-                            label = { Text(destination.label) },
-                        )
-                    }
+            if (!isReaderOpen) NavigationBar {
+                destinations.forEachIndexed { index, destination ->
+                    NavigationBarItem(
+                        selected = selected == index,
+                        onClick = {
+                            selected = index
+                            if (index != 1) { selectedSurahNumber = 0; selectedAyah = 0 }
+                        },
+                        icon = destination.icon,
+                        label = { Text(destination.label) },
+                    )
                 }
             }
         },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (isReaderOpen) {
-                        Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
-                    } else {
-                        Modifier.padding(paddingValues)
-                    },
-                ),
+            modifier = Modifier.fillMaxSize().then(
+                if (isReaderOpen) Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
+                else Modifier.padding(paddingValues),
+            ),
         ) {
             when (selected) {
                 0 -> HomeScreen(
@@ -127,25 +96,18 @@ private fun IslamicKnowledgeApp() {
                         when (destination) {
                             HomeDestination.QURAN -> openQuran()
                             HomeDestination.HADITH -> openPlaceholder(2)
-                            HomeDestination.PRAYER,
-                            HomeDestination.DUA -> openPlaceholder(4)
+                            HomeDestination.PRAYER, HomeDestination.DUA -> openPlaceholder(4)
                         }
                     },
                 )
                 1 -> {
                     val surah = selectedSurah
-                    if (surah == null) {
-                        QuranScreen(onSurahClick = ::openSurah)
-                    } else {
-                        QuranReaderScreen(
-                            surah = surah,
-                            initialAyah = selectedAyah.takeIf { it > 0 },
-                            onBack = {
-                                selectedSurahNumber = 0
-                                selectedAyah = 0
-                            },
-                        )
-                    }
+                    if (surah == null) QuranScreen(onSurahClick = ::openSurah)
+                    else QuranReaderScreen(
+                        surah = surah,
+                        initialAyah = selectedAyah.takeIf { it > 0 },
+                        onBack = { selectedSurahNumber = 0; selectedAyah = 0 },
+                    )
                 }
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
                 else -> PlaceholderScreen(destinations[selected].label)
@@ -156,7 +118,5 @@ private fun IslamicKnowledgeApp() {
 
 @Composable
 private fun PlaceholderScreen(title: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(title)
-    }
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(title) }
 }
