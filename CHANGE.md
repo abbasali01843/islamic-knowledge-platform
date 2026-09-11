@@ -22,12 +22,12 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - Persisted Arabic/Bengali display choices and reader font scale locally across reader sessions.
 - Hardened note rendering so a newly saved note is reflected immediately in the current reader.
 - Replaced the Quran reader back icon with the AutoMirrored Material icon for RTL-aware navigation.
+- Hardened app navigation state so the selected tab, surah, and ayah can be restored by Compose saveable state.
+- Enabled Android edge-to-edge and applied safe-drawing insets around the full-screen reader.
+- Refined Quran-wide search with trimmed queries, a clear action, and explicit idle/empty states.
 
 ### Remaining before v0.2.0-alpha
 - Final reader UX and interaction polish.
-- Navigation and state-restoration hardening.
-- Edge-to-edge/insets review on Android 15+.
-- Search loading, empty, and error states.
 - Bookmark and notes management screens/flows.
 - Juz/Hizb/page navigation UI.
 - Accessibility and small/large-screen review.
