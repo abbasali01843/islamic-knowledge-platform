@@ -2,7 +2,7 @@
 
 > **Bengali-first · Offline-first · Source-backed Islamic knowledge & practice for Android**
 
-[![Android CI](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml/badge.svg)](https://github.com/abbasali0183/islamic-knowledge-platform/actions/workflows/android-ci.yml)
+[![Android CI](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml/badge.svg)](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml)
 [![Latest Release](https://img.shields.io/github/v/release/abbasali01843/islamic-knowledge-platform?include_prereleases&label=latest%20release)](https://github.com/abbasali01843/islamic-knowledge-platform/releases)
 
 ## 📱 Download
