@@ -22,17 +22,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.islamicknowledge.platform.core.design.components.SectionHeader
 
-private data class QuickAction(val title: String, val subtitle: String)
+private data class QuickAction(
+    val title: String,
+    val subtitle: String,
+    val destination: HomeDestination,
+)
+
+enum class HomeDestination {
+    QURAN,
+    HADITH,
+    PRAYER,
+    DUA,
+}
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onQuickActionClick: (HomeDestination) -> Unit = {},
 ) {
     val actions = listOf(
-        QuickAction("কুরআন", "পড়া ও অনুসন্ধান"),
-        QuickAction("হাদিস", "সহিহ উৎসভিত্তিক জ্ঞান"),
-        QuickAction("নামাজ", "আজকের সময়সূচি"),
-        QuickAction("দোয়া ও যিকর", "দৈনন্দিন আমল")
+        QuickAction("কুরআন", "পড়া ও অনুসন্ধান", HomeDestination.QURAN),
+        QuickAction("হাদিস", "সহিহ উৎসভিত্তিক জ্ঞান", HomeDestination.HADITH),
+        QuickAction("নামাজ", "আজকের সময়সূচি", HomeDestination.PRAYER),
+        QuickAction("দোয়া ও যিকর", "দৈনন্দিন আমল", HomeDestination.DUA),
     )
 
     LazyColumn(
@@ -70,7 +82,10 @@ fun HomeScreen(
         item { SectionHeader("দ্রুত অ্যাকশন") }
 
         items(actions) { action ->
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                onClick = { onQuickActionClick(action.destination) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
