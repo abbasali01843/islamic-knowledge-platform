@@ -19,10 +19,12 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - Added CI validation for 114 surahs and 6,236 ayahs before Android builds.
 - Continued Material 3 design-system work for Islamic green/warm-neutral theming, Bengali-first typography, and consistent shapes.
 - Updated README with current milestone status and roadmap.
+- Persisted Arabic/Bengali display choices and reader font scale locally across reader sessions.
+- Hardened note rendering so a newly saved note is reflected immediately in the current reader.
+- Replaced the Quran reader back icon with the AutoMirrored Material icon for RTL-aware navigation.
 
 ### Remaining before v0.2.0-alpha
 - Final reader UX and interaction polish.
-- Persist reader display preferences where appropriate.
 - Navigation and state-restoration hardening.
 - Edge-to-edge/insets review on Android 15+.
 - Search loading, empty, and error states.
