@@ -17,32 +17,12 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "IslamicKnowledgePlatform"
+
+// Only include modules that currently have real build scripts.
+// Placeholder directories under core/, feature/, and data/ remain in the
+// tree for roadmap structure but are not Gradle projects until implemented.
 include(":app")
-include(":core:common")
-include(":core:model")
-include(":core:database")
-include(":core:network")
-include(":core:navigation")
-include(":core:search")
-include(":core:audio")
-include(":core:location")
-include(":core:notifications")
 include(":core:design")
+include(":core:model")
 include(":feature:home")
 include(":feature:quran")
-include(":feature:hadith")
-include(":feature:prayer")
-include(":feature:ramadan")
-include(":feature:qibla")
-include(":feature:dua")
-include(":feature:athkar")
-include(":feature:learn")
-include(":feature:seerah")
-include(":feature:calendar")
-include(":feature:zakat")
-include(":feature:hajj")
-include(":feature:quiz")
-include(":data:quran")
-include(":data:hadith")
-include(":data:dua")
-include(":data:knowledge")
