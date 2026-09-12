@@ -20,6 +20,33 @@ internal class QuranReaderRepository(context: Context) {
         }
     }
 
+    /** First (surahNumber, ayah) that belongs to the given Juz, if content has metadata. */
+    fun firstAyahForJuz(juz: Int): Pair<Int, ReaderAyah>? {
+        for (surah in document.surahs) {
+            val ayah = surah.ayahs.firstOrNull { it.juz == juz }
+            if (ayah != null) return surah.number to ayah
+        }
+        return null
+    }
+
+    /** First (surahNumber, ayah) on the given Mushaf page, if content has metadata. */
+    fun firstAyahForPage(page: Int): Pair<Int, ReaderAyah>? {
+        for (surah in document.surahs) {
+            val ayah = surah.ayahs.firstOrNull { it.page == page }
+            if (ayah != null) return surah.number to ayah
+        }
+        return null
+    }
+
+    fun availableJuzNumbers(): List<Int> =
+        document.surahs.flatMap { surah -> surah.ayahs.mapNotNull { it.juz } }.distinct().sorted()
+
+    fun availablePageNumbers(): List<Int> =
+        document.surahs.flatMap { surah -> surah.ayahs.mapNotNull { it.page } }.distinct().sorted()
+
+    fun hasStructuralIndex(): Boolean =
+        availableJuzNumbers().isNotEmpty() || availablePageNumbers().isNotEmpty()
+
     fun sourceAttribution(): String =
         "বাংলা অনুবাদ: ${document.bengaliSource.name} • V${document.bengaliSource.version} • QuranEnc.com"
 
