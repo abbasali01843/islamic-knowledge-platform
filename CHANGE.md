@@ -2,6 +2,20 @@
 
 All notable changes to **Islamic Knowledge Platform** are tracked here by milestone and release.
 
+## Phase 0 — Build health (in progress)
+
+### Completed
+- Restricted `settings.gradle.kts` to modules that have real build scripts (`:app`, `:core:design`, `:core:model`, `:feature:home`, `:feature:quran`).
+- Left roadmap placeholder directories in the tree without registering them as Gradle projects.
+- Added Gradle Wrapper scripts and `gradle-wrapper.properties` (Gradle 8.11.1).
+- Documented one-time `gradle-wrapper.jar` generation and local Quran content generation in `DEVELOPMENT.md`.
+- Made CI prefer `./gradlew` when the wrapper jar is present, with a system `gradle` fallback.
+- Release workflow now validates Quran content before packaging.
+
+### Remaining for Phase 0 close-out
+- Commit `gradle/wrapper/gradle-wrapper.jar` after running `gradle wrapper --gradle-version 8.11.1` once locally.
+- Confirm green CI on the Phase 0 branch / PR.
+
 ## v0.2.0-alpha — Quran (in progress)
 
 ### Completed
@@ -51,3 +65,4 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - CI is checked at milestone boundaries; larger Gradle/dependency/release changes require CI verification.
 - A release is considered ready only after CI verification and device APK testing.
 - Development APKs are not installed after every commit. A device-QA checkpoint will be announced when the Quran milestone reaches the appropriate state.
+- Only register a module in `settings.gradle.kts` when it has a real `build.gradle.kts`.

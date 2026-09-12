@@ -35,11 +35,24 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
       - name: Generate full Quran content
         run: python3 scripts/generate_quran_content.py --output feature/quran/src/main/assets/quran_reader.json
 
+      - name: Validate Quran content
+        run: python3 scripts/validate_quran_content.py feature/quran/src/main/assets/quran_reader.json
+
       - name: Build debug APK
-        run: gradle :app:assembleDebug
+        run: |
+          if [ -f ./gradlew ] && [ -f gradle/wrapper/gradle-wrapper.jar ]; then
+            ./gradlew :app:assembleDebug --stacktrace
+          else
+            gradle :app:assembleDebug --stacktrace
+          fi
 
       - name: Prepare release APK
         shell: bash

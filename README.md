@@ -109,6 +109,9 @@ data/
   quran/ hadith/ dua/ knowledge/
 ```
 
+**Active Gradle modules today:** `:app`, `:core:design`, `:core:model`, `:feature:home`, `:feature:quran`.  
+Other folders are roadmap placeholders and are registered in Gradle only when they have real build scripts.
+
 ### Technology direction
 
 **Kotlin · Jetpack Compose · Material 3 · Clean Architecture + MVVM · Hilt · Room · SQLite FTS · DataStore · Navigation Compose · Coroutines + Flow · WorkManager · Media3 · Retrofit/OkHttp**
@@ -150,12 +153,11 @@ Religious content is treated separately from application source code. Every bund
 ## 📊 Current status
 
 **Published release:** `v0.1.0-alpha01` — Foundation  
-**Current development:** `v0.2.0-alpha` — Quran  
-**Current milestone estimate:** **~80% complete**
+**Current development:** Phase 0 (build health) + `v0.2.0-alpha` Quran  
+**Quran milestone estimate:** **~80% complete**
 
-The Quran reader now has stronger state restoration, Android edge-to-edge handling, and clearer offline search states. Remaining work is concentrated in bookmark/notes management, index navigation, accessibility/adaptive layout, real-device typography/content QA and release hardening.
-
-See [`CHANGE.md`](CHANGE.md) for the running development report and milestone history.
+See [`CHANGE.md`](CHANGE.md) for the running development report and milestone history.  
+See [`DEVELOPMENT.md`](DEVELOPMENT.md) for local setup, Gradle Wrapper, and Quran content generation.
 
 ## 🛠️ Development workflow
 
