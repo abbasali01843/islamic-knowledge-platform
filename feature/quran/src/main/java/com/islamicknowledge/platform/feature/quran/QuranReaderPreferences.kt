@@ -19,6 +19,13 @@ internal class QuranReaderPreferences(context: Context) {
         return bookmarked
     }
 
+    fun removeBookmark(surahNumber: Int, ayahNumber: Int) {
+        val bookmarks = preferences.getStringSet(KEY_BOOKMARKS, emptySet()).orEmpty().toMutableSet()
+        if (bookmarks.remove(key(surahNumber, ayahNumber))) {
+            preferences.edit().putStringSet(KEY_BOOKMARKS, bookmarks).apply()
+        }
+    }
+
     fun getBookmarks(): Set<String> =
         preferences.getStringSet(KEY_BOOKMARKS, emptySet()).orEmpty().toSet()
 
@@ -26,7 +33,33 @@ internal class QuranReaderPreferences(context: Context) {
         preferences.getString(noteKey(surahNumber, ayahNumber), "").orEmpty()
 
     fun saveNote(surahNumber: Int, ayahNumber: Int, note: String) {
-        preferences.edit().putString(noteKey(surahNumber, ayahNumber), note.trim()).apply()
+        val trimmed = note.trim()
+        val editor = preferences.edit()
+        if (trimmed.isEmpty()) {
+            editor.remove(noteKey(surahNumber, ayahNumber))
+        } else {
+            editor.putString(noteKey(surahNumber, ayahNumber), trimmed)
+        }
+        editor.apply()
+    }
+
+    fun deleteNote(surahNumber: Int, ayahNumber: Int) {
+        preferences.edit().remove(noteKey(surahNumber, ayahNumber)).apply()
+    }
+
+    /** Returns notes as surah:ayah -> text, sorted by surah then ayah. */
+    fun getAllNotes(): List<NoteEntry> {
+        return preferences.all.mapNotNull { (storageKey, value) ->
+            if (!storageKey.startsWith("note_") || value !is String || value.isBlank()) {
+                return@mapNotNull null
+            }
+            val raw = storageKey.removePrefix("note_")
+            val parts = raw.split("_")
+            if (parts.size != 2) return@mapNotNull null
+            val surah = parts[0].toIntOrNull() ?: return@mapNotNull null
+            val ayah = parts[1].toIntOrNull() ?: return@mapNotNull null
+            NoteEntry(surah, ayah, value)
+        }.sortedWith(compareBy({ it.surahNumber }, { it.ayahNumber }))
     }
 
     fun saveLastRead(surahNumber: Int, ayahNumber: Int) {
@@ -78,4 +111,10 @@ internal class QuranReaderPreferences(context: Context) {
 data class LastRead(
     val surahNumber: Int,
     val ayahNumber: Int,
+)
+
+data class NoteEntry(
+    val surahNumber: Int,
+    val ayahNumber: Int,
+    val text: String,
 )
