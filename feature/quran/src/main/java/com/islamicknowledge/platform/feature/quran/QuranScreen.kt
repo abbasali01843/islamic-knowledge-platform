@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.NavigateBefore
+import androidx.compose.material.icons.automirrored.rounded.NavigateNext
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
@@ -34,12 +36,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,11 +53,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.islamicknowledge.platform.core.design.components.SectionHeader
 import com.islamicknowledge.platform.core.model.quran.RevelationType
 import com.islamicknowledge.platform.core.model.quran.Surah
@@ -82,8 +88,7 @@ fun QuranScreen(onSurahClick: (Surah, Int?) -> Unit = { _, _ -> }) {
             val s = parts[0].toIntOrNull() ?: return@mapNotNull null
             val a = parts[1].toIntOrNull() ?: return@mapNotNull null
             val catalog = quranSurahs.firstOrNull { it.number == s } ?: return@mapNotNull null
-            val ayah = repository.ayahsForSurah(s).firstOrNull { it.number == a }
-            BookmarkEntry(catalog, ayah, a)
+            BookmarkEntry(catalog, repository.ayahsForSurah(s).firstOrNull { it.number == a }, a)
         }.sortedWith(compareBy({ it.surah.number }, { it.ayahNumber }))
     }
     val notes = remember(libraryVersion) {
@@ -102,7 +107,6 @@ fun QuranScreen(onSurahClick: (Surah, Int?) -> Unit = { _, _ -> }) {
         val surah = quranSurahs.firstOrNull { it.number == hit.first } ?: return
         onSurahClick(surah, hit.second.number)
     }
-
     Column(modifier = Modifier.fillMaxSize()) {
         SectionHeader(title = "কুরআন", modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
         Row(
@@ -118,7 +122,10 @@ fun QuranScreen(onSurahClick: (Surah, Int?) -> Unit = { _, _ -> }) {
             ).forEach { (tab, label) ->
                 FilterChip(
                     selected = selectedTab == tab,
-                    onClick = { selectedTab = tab; if (tab == QuranLibraryTab.BOOKMARKS || tab == QuranLibraryTab.NOTES) libraryVersion++ },
+                    onClick = {
+                        selectedTab = tab
+                        if (tab == QuranLibraryTab.BOOKMARKS || tab == QuranLibraryTab.NOTES) libraryVersion++
+                    },
                     label = { Text(label) },
                 )
             }
@@ -170,42 +177,36 @@ fun QuranScreen(onSurahClick: (Surah, Int?) -> Unit = { _, _ -> }) {
                 }
             }
             QuranLibraryTab.JUZ -> {
-                if (!hasIndex) {
-                    EmptyMsg("পারা সূচি পুরো কনটেন্ট প্যাকেজে উপলব্ধ", "CI বিল্ডের পর ৩০ পারার নেভিগেশন চালু হবে।")
-                } else {
-                    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(juzNumbers, key = { it }) { juz ->
-                            val hit = repository.firstAyahForJuz(juz)
-                            val sub = hit?.let { (sn, ay) ->
-                                val name = quranSurahs.firstOrNull { it.number == sn }?.nameBengali ?: "সূরা $sn"
-                                "$name • আয়াত ${ay.number}"
-                            } ?: "শুরুর আয়াত"
-                            Card(modifier = Modifier.fillMaxWidth().clickable { openJuz(juz) }) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("পারা $juz", style = MaterialTheme.typography.titleMedium)
-                                    Text(sub, style = MaterialTheme.typography.bodySmall)
-                                }
+                if (!hasIndex) EmptyMsg("পারা সূচি পুরো কনটেন্ট প্যাকেজে উপলব্ধ", "CI বিল্ডের পর ৩০ পারার নেভিগেশন চালু হবে।")
+                else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(juzNumbers, key = { it }) { juz ->
+                        val hit = repository.firstAyahForJuz(juz)
+                        val sub = hit?.let { (sn, ay) ->
+                            val name = quranSurahs.firstOrNull { it.number == sn }?.nameBengali ?: "সূরা $sn"
+                            "$name • আয়াত ${ay.number}"
+                        } ?: "শুরুর আয়াত"
+                        Card(modifier = Modifier.fillMaxWidth().clickable { openJuz(juz) }) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text("পারা $juz", style = MaterialTheme.typography.titleMedium)
+                                Text(sub, style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
                 }
             }
             QuranLibraryTab.PAGES -> {
-                if (!hasIndex) {
-                    EmptyMsg("পৃষ্ঠা সূচি পুরো কনটেন্ট প্যাকেজে উপলব্ধ", "পূর্ণ ৬০৪ পৃষ্ঠার সূচি CI বিল্ডে জেনারেট হয়।")
-                } else {
-                    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(pageNumbers, key = { it }) { page ->
-                            val hit = repository.firstAyahForPage(page)
-                            val sub = hit?.let { (sn, ay) ->
-                                val name = quranSurahs.firstOrNull { it.number == sn }?.nameBengali ?: "সূরা $sn"
-                                "$name • আয়াত ${ay.number}"
-                            } ?: "শুরুর আয়াত"
-                            Card(modifier = Modifier.fillMaxWidth().clickable { openPage(page) }) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("পৃষ্ঠা $page", style = MaterialTheme.typography.titleMedium)
-                                    Text(sub, style = MaterialTheme.typography.bodySmall)
-                                }
+                if (!hasIndex) EmptyMsg("পৃষ্ঠা সূচি পুরো কনটেন্ট প্যাকেজে উপলব্ধ", "পূর্ণ ৬০৪ পৃষ্ঠার সূচি CI বিল্ডে জেনারেট হয়।")
+                else LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(pageNumbers, key = { it }) { page ->
+                        val hit = repository.firstAyahForPage(page)
+                        val sub = hit?.let { (sn, ay) ->
+                            val name = quranSurahs.firstOrNull { it.number == sn }?.nameBengali ?: "সূরা $sn"
+                            "$name • আয়াত ${ay.number}"
+                        } ?: "শুরুর আয়াত"
+                        Card(modifier = Modifier.fillMaxWidth().clickable { openPage(page) }) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text("পৃষ্ঠা $page", style = MaterialTheme.typography.titleMedium)
+                                Text(sub, style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
@@ -263,12 +264,25 @@ private fun EmptyMsg(title: String, body: String?) {
 }
 
 @Composable
-fun QuranReaderScreen(surah: Surah, initialAyah: Int? = null, onBack: () -> Unit) {
+fun QuranReaderScreen(
+    surah: Surah,
+    initialAyah: Int? = null,
+    onBack: () -> Unit,
+    onNavigateToSurah: (Surah) -> Unit = {},
+) {
     val context = LocalContext.current
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        val previous = view.keepScreenOn
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = previous }
+    }
     val clipboard = LocalClipboardManager.current
     val repository = remember(context) { QuranReaderRepository(context) }
     val preferences = remember(context) { QuranReaderPreferences(context) }
     val allAyahs = remember(repository, surah.number) { repository.ayahsForSurah(surah.number) }
+    val previousSurah = quranSurahs.firstOrNull { it.number == surah.number - 1 }
+    val nextSurah = quranSurahs.firstOrNull { it.number == surah.number + 1 }
     val listState = rememberLazyListState()
     var query by remember { mutableStateOf("") }
     var showArabic by remember { mutableStateOf(preferences.getShowArabic()) }
@@ -282,6 +296,19 @@ fun QuranReaderScreen(surah: Surah, initialAyah: Int? = null, onBack: () -> Unit
     val ayahs = allAyahs.filter {
         query.isBlank() || it.arabic.contains(query, true) || it.bengali.contains(query, true)
     }
+    val progress by remember {
+        derivedStateOf {
+            if (ayahs.isEmpty()) 0f
+            else {
+                val first = listState.firstVisibleItemIndex.coerceIn(0, (ayahs.size - 1).coerceAtLeast(0))
+                (first + 1).toFloat() / ayahs.size.toFloat()
+            }
+        }
+    }
+    LaunchedEffect(listState.firstVisibleItemIndex, ayahs) {
+        val visible = ayahs.getOrNull(listState.firstVisibleItemIndex) ?: return@LaunchedEffect
+        preferences.saveLastRead(surah.number, visible.number)
+    }
     LaunchedEffect(initialAyah, ayahs.size) {
         val target = initialAyah ?: return@LaunchedEffect
         val index = ayahs.indexOfFirst { it.number == target }
@@ -294,7 +321,14 @@ fun QuranReaderScreen(surah: Surah, initialAyah: Int? = null, onBack: () -> Unit
                 Text(surah.nameBengali, style = MaterialTheme.typography.titleLarge)
                 Text("${surah.nameArabic} • ${surah.ayahCount} আয়াত", style = MaterialTheme.typography.bodySmall)
             }
+            IconButton(onClick = { previousSurah?.let(onNavigateToSurah) }, enabled = previousSurah != null) {
+                Icon(Icons.AutoMirrored.Rounded.NavigateBefore, contentDescription = "পূর্ববর্তী সূরা")
+            }
+            IconButton(onClick = { nextSurah?.let(onNavigateToSurah) }, enabled = nextSurah != null) {
+                Icon(Icons.AutoMirrored.Rounded.NavigateNext, contentDescription = "পরবর্তী সূরা")
+            }
         }
+        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(3.dp))
         Text(repository.sourceAttribution(), style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             FilterChip(selected = showArabic, onClick = { showArabic = !showArabic; preferences.setShowArabic(showArabic) }, label = { Text("عربي") })
@@ -344,8 +378,12 @@ fun QuranReaderScreen(surah: Surah, initialAyah: Int? = null, onBack: () -> Unit
                             if (showArabic) {
                                 Text(
                                     ayah.arabic,
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontSize = MaterialTheme.typography.headlineSmall.fontSize * fontScale),
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                                    style = MaterialTheme.typography.headlineSmall.copy(
+                                        fontSize = (MaterialTheme.typography.headlineSmall.fontSize.value * fontScale).sp,
+                                        lineHeight = (MaterialTheme.typography.headlineSmall.fontSize.value * fontScale * 1.85f).sp,
+                                        textDirection = TextDirection.Rtl,
+                                    ),
                                     textAlign = TextAlign.End,
                                 )
                             }
@@ -353,11 +391,6 @@ fun QuranReaderScreen(surah: Surah, initialAyah: Int? = null, onBack: () -> Unit
                                 Text(ayah.bengali, style = MaterialTheme.typography.bodyLarge.copy(fontSize = MaterialTheme.typography.bodyLarge.fontSize * fontScale))
                             }
                             if (note.isNotBlank()) Text("নোট: $note", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 10.dp))
-                            Text(
-                                "পড়া হয়েছে হিসেবে সংরক্ষণ",
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(top = 12.dp).clickable { preferences.saveLastRead(surah.number, ayah.number) },
-                            )
                         }
                     }
                 }

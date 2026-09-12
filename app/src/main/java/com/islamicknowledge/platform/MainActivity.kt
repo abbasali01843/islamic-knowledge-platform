@@ -63,7 +63,11 @@ private fun IslamicKnowledgeApp() {
 
     fun openQuran() { selected = 1; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
-    fun openSurah(surah: Surah, ayah: Int?) { selected = 1; selectedSurahNumber = surah.number; selectedAyah = ayah ?: 0 }
+    fun openSurah(surah: Surah, ayah: Int?) {
+        selected = 1
+        selectedSurahNumber = surah.number
+        selectedAyah = ayah ?: 0
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -74,7 +78,10 @@ private fun IslamicKnowledgeApp() {
                         selected = selected == index,
                         onClick = {
                             selected = index
-                            if (index != 1) { selectedSurahNumber = 0; selectedAyah = 0 }
+                            if (index != 1) {
+                                selectedSurahNumber = 0
+                                selectedAyah = 0
+                            }
                         },
                         icon = destination.icon,
                         label = { Text(destination.label) },
@@ -102,12 +109,19 @@ private fun IslamicKnowledgeApp() {
                 )
                 1 -> {
                     val surah = selectedSurah
-                    if (surah == null) QuranScreen(onSurahClick = ::openSurah)
-                    else QuranReaderScreen(
-                        surah = surah,
-                        initialAyah = selectedAyah.takeIf { it > 0 },
-                        onBack = { selectedSurahNumber = 0; selectedAyah = 0 },
-                    )
+                    if (surah == null) {
+                        QuranScreen(onSurahClick = ::openSurah)
+                    } else {
+                        QuranReaderScreen(
+                            surah = surah,
+                            initialAyah = selectedAyah.takeIf { it > 0 },
+                            onBack = { selectedSurahNumber = 0; selectedAyah = 0 },
+                            onNavigateToSurah = { next ->
+                                selectedSurahNumber = next.number
+                                selectedAyah = 0
+                            },
+                        )
+                    }
                 }
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
                 else -> PlaceholderScreen(destinations[selected].label)
