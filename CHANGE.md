@@ -2,7 +2,7 @@
 
 All notable changes to **Islamic Knowledge Platform** are tracked here by milestone and release.
 
-## Phase 0 — Build health (in progress)
+## Phase 0 — Build health
 
 ### Completed
 - Restricted `settings.gradle.kts` to modules that have real build scripts (`:app`, `:core:design`, `:core:model`, `:feature:home`, `:feature:quran`).
@@ -11,10 +11,10 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - Documented one-time `gradle-wrapper.jar` generation and local Quran content generation in `DEVELOPMENT.md`.
 - Made CI prefer `./gradlew` when the wrapper jar is present, with a system `gradle` fallback.
 - Release workflow now validates Quran content before packaging.
+- Merged via PR #2.
 
-### Remaining for Phase 0 close-out
-- Commit `gradle/wrapper/gradle-wrapper.jar` after running `gradle wrapper --gradle-version 8.11.1` once locally.
-- Confirm green CI on the Phase 0 branch / PR.
+### Optional follow-up
+- Commit `gradle/wrapper/gradle-wrapper.jar` when a desktop Gradle install is available.
 
 ## v0.2.0-alpha — Quran (in progress)
 
@@ -39,16 +39,19 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - Hardened app navigation state so the selected tab, surah, and ayah can be restored by Compose saveable state.
 - Enabled Android edge-to-edge and applied safe-drawing insets around the full-screen reader.
 - Refined Quran-wide search with trimmed queries, a clear action, and explicit idle/empty states.
+- **Phase 1 library UI:** Surah / Juz / Page / Bookmark / Notes tabs on the Quran home screen.
+- Jump to the first ayah of a Juz or Mushaf page when structural metadata is present in the content package.
+- Notes library list with open and delete; bookmark list with remove.
+- Preference helpers for listing all notes and removing bookmarks.
+- Repository helpers for Juz/page index lookup.
+- Clearer accessibility content descriptions on primary reader and library actions.
 
 ### Remaining before v0.2.0-alpha
-- Final reader UX and interaction polish.
-- Bookmark and notes management screens/flows.
-- Juz/Hizb/page navigation UI.
-- Accessibility and small/large-screen review.
-- Arabic typography/rendering review on real devices.
-- Full offline 114-surah QA.
-- Device testing of scrolling, search, bookmark, notes, copy/share, and resume.
-- Final CI verification and release APK build.
+- Final reader UX polish on real devices (Arabic typography, scrolling feel).
+- Accessibility and small/large-screen layout review on hardware.
+- Full offline 114-surah QA (requires CI-generated package / device APK).
+- Device testing of scrolling, search, bookmark, notes, copy/share, resume, Juz/page jumps.
+- Final CI verification and release APK build (`v0.2.0-alpha`).
 
 ## v0.1.0-alpha01 — Foundation
 
