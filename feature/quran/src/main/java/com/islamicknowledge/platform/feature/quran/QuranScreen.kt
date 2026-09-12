@@ -2,8 +2,6 @@ package com.islamicknowledge.platform.feature.quran
 
 import android.content.Context
 import android.content.Intent
-import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
@@ -272,10 +271,11 @@ fun QuranReaderScreen(
     onNavigateToSurah: (Surah) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     DisposableEffect(Unit) {
-        val window = (context as? ComponentActivity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        onDispose { window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        val previous = view.keepScreenOn
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = previous }
     }
     val clipboard = LocalClipboardManager.current
     val repository = remember(context) { QuranReaderRepository(context) }
