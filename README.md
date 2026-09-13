@@ -7,13 +7,13 @@
 
 ## 📱 Download
 
-### Latest published release — `v0.1.0-alpha01`
+### Latest published release — `v0.2.0-alpha01` (Quran)
 
-**[⬇️ Download APK](https://github.com/abbasali01843/islamic-knowledge-platform/releases/download/v0.1.0-alpha01/islamic-knowledge-platform-debug.apk)**
+**[⬇️ Download APK](https://github.com/abbasali01843/islamic-knowledge-platform/releases/download/v0.2.0-alpha01/islamic-knowledge-platform-debug.apk)**
 
-This published alpha contains the foundation release. The current `main` branch is ahead of that release and is actively building the Quran milestone; a new APK will be published only after the milestone passes CI and device QA.
+Offline Quran reader with 114 surahs, Bengali translation, Juz/page index, bookmarks, notes, search, and resume. Device QA passed on Android phone.
 
-[View release notes & SHA-256](https://github.com/abbasali01843/islamic-knowledge-platform/releases/tag/v0.1.0-alpha01)
+[View release notes & SHA-256](https://github.com/abbasali01843/islamic-knowledge-platform/releases/tag/v0.2.0-alpha01)
 
 > **Android:** min SDK 26 (Android 8.0+) · **Application ID:** `com.islamicknowledge.platform`
 
@@ -50,67 +50,36 @@ Build a trustworthy Islamic knowledge platform where the internet enhances the e
 | Personal Dashboard | Reading/learning progress and personal activity |
 | Notifications | Prayer, Sehri/Iftar, Jumu'ah, adhkar and daily content reminders |
 
-## 📖 Quran milestone — `v0.2.0-alpha`
+## 📖 Quran milestone — `v0.2.0-alpha` ✅
 
-The Quran milestone is currently under active development. The content pipeline has been verified in GitHub Actions with **114 surahs and 6,236 ayahs** generated into the build.
+Released as **`v0.2.0-alpha01`** after CI verification and real-device QA.
 
-### Implemented so far
+### Included
 
-- 114-surah Bengali/Arabic catalog
-- Offline Quran content package generated during CI
+- 114-surah Bengali/Arabic catalog and full offline content package (6,236 ayahs)
 - Bengali Rowwad translation source metadata
-- Arabic text + Bengali translation reader
-- Surah list and Bengali/English/Arabic filtering
-- In-surah Arabic/Bengali search
-- Quran-wide search entry point
-- Bookmark add/remove and bookmark list
-- Last-read position and Resume flow
-- Per-ayah notes stored locally
-- Copy and Android share actions
-- Arabic/Bengali display toggles
-- Reader font-size controls
-- Reader display choices and font scale persisted locally
-- Juz, Hizb and page metadata parsing/display
-- Sajdah-ayah indication
-- Focused full-screen Quran reader navigation
-- Navigation state restoration for selected tab/surah/ayah
-- Android edge-to-edge setup with safe-drawing insets for the full-screen reader
-- Refined Quran search with trimmed queries, clear action, and explicit empty/idle states
-- Islamic green/warm-neutral Material 3 design direction
-- Bengali-first typography and component shapes
-- CI retry/backoff handling for Quran content API rate limits
-
-### Still required before `v0.2.0-alpha`
-
-- Final reader UX and interaction polish
-- Bookmark and notes management screens/flows
-- Juz/Hizb/page navigation UI rather than metadata only
-- Accessibility and small-screen/large-screen layout review
-- Arabic typography/rendering review on real devices
-- Offline installation and full 114-surah content QA
-- Device testing of scrolling, search, bookmark, notes, copy/share and resume
-- Final CI verification and release APK build
-
-**Important:** a green CI build does not by itself mean the Quran milestone is release-ready. The final APK must pass real-device QA first.
+- Arabic + Bengali reader with font scale and display toggles
+- Surah / Juz / Page / Bookmark / Notes library tabs
+- In-surah and Quran-wide search
+- Bookmarks, last-read/resume, local notes
+- Copy and share
+- Progress bar, previous/next surah, keep-screen-on, auto last-read
+- Arabic RTL typography with improved line height
+- Sajdah indication; Juz/Hizb/page metadata
+- Material 3 Islamic green/warm-neutral design; Bengali-first UI
 
 ## 🏗️ Architecture
-
-The project is being built as a modular Kotlin/Android application with a feature-sliced structure.
 
 ```text
 app/
 core/
-  common/ database/ network/ model/ navigation/ search/
-  audio/ location/ notifications/ design/
+  design/ model/
 feature/
-  home/ quran/ hadith/ prayer/ ramadan/ qibla/
-  dua/ athkar/ learn/ seerah/ calendar/ zakat/ hajj/ quiz/
-data/
-  quran/ hadith/ dua/ knowledge/
+  home/ quran/
 ```
 
-**Active Gradle modules today:** `:app`, `:core:design`, `:core:model`, `:feature:home`, `:feature:quran`.  
-Other folders are roadmap placeholders and are registered in Gradle only when they have real build scripts.
+**Active Gradle modules:** `:app`, `:core:design`, `:core:model`, `:feature:home`, `:feature:quran`.  
+Other folders are roadmap placeholders until they have real build scripts.
 
 ### Technology direction
 
@@ -118,30 +87,19 @@ Other folders are roadmap placeholders and are registered in Gradle only when th
 
 ## 🔐 Offline / online model
 
-The core principle is:
-
 > **The internet should enhance the app, not make the app work.**
 
 Offline use is intended for core knowledge and practice. Online connectivity is reserved for licensed updates, optional downloads/synchronization and future source-grounded services.
 
 ## 📚 Content provenance
 
-Religious content is treated separately from application source code. Every bundled or synchronized source should record:
-
-- Source / publisher
-- Author or translator
-- Edition / reference
-- Source version
-- License
-- Attribution requirements
-- Verification status
-- Verification date
+Religious content is treated separately from application source code. Every bundled or synchronized source should record source/publisher, translator, edition, license, attribution, and verification status.
 
 ## 🗺️ Release roadmap
 
 - `v0.1.0-alpha` — **Foundation** ✅
-- `v0.2.0-alpha` — **Quran** 🚧 active development
-- `v0.3.0-alpha` — **Hadith**
+- `v0.2.0-alpha` — **Quran** ✅
+- `v0.3.0-alpha` — **Hadith** ← next
 - `v0.4.0-alpha` — **Salah + Qibla**
 - `v0.5.0-beta` — **Ramadan + Dua + Athkar**
 - `v0.6.0-beta` — **Learn Islam + Seerah**
@@ -152,12 +110,11 @@ Religious content is treated separately from application source code. Every bund
 
 ## 📊 Current status
 
-**Published release:** `v0.1.0-alpha01` — Foundation  
-**Current development:** Phase 0 (build health) + `v0.2.0-alpha` Quran  
-**Quran milestone estimate:** **~80% complete**
+**Published release:** `v0.2.0-alpha01` — Quran  
+**Next development:** `v0.3.0-alpha` Hadith  
 
-See [`CHANGE.md`](CHANGE.md) for the running development report and milestone history.  
-See [`DEVELOPMENT.md`](DEVELOPMENT.md) for local setup, Gradle Wrapper, and Quran content generation.
+See [`CHANGE.md`](CHANGE.md) for the running development report.  
+See [`DEVELOPMENT.md`](DEVELOPMENT.md) for local setup and content generation.
 
 ## 🛠️ Development workflow
 
@@ -165,18 +122,15 @@ See [`DEVELOPMENT.md`](DEVELOPMENT.md) for local setup, Gradle Wrapper, and Qura
 - `develop` — integration branch
 - `feature/*` — new features
 - `fix/*` — bug fixes
-- Semantic versioning
-- GitHub Actions CI
-- Tagged releases with APK artifacts
+- Semantic versioning · GitHub Actions CI · Tagged releases with APK artifacts
 
 ## 📄 License
 
-The application source license and third-party content licenses are documented separately as the project is assembled. **Application source code and religious content are not automatically covered by the same license.** Each third-party source must retain its own attribution and license requirements.
+Application source and third-party religious content licenses are documented separately. **They are not automatically the same license.**
 
 ---
 
 **Project:** Islamic Knowledge Platform  
 **Package:** `com.islamicknowledge.platform`  
 **Platform:** Android 8.0+  
-**Published version:** `0.1.0-alpha01`  
-**Development milestone:** `0.2.0-alpha`
+**Published version:** `0.2.0-alpha01`

@@ -16,7 +16,10 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 ### Optional follow-up
 - Commit `gradle/wrapper/gradle-wrapper.jar` when a desktop Gradle install is available.
 
-## v0.2.0-alpha — Quran (in progress)
+## v0.2.0-alpha — Quran ✅ released
+
+**Release tag:** `v0.2.0-alpha01`  
+**Device QA:** passed on Android phone (2026-09-13)
 
 ### Completed
 - Added the Quran feature module and offline Quran reader architecture.
@@ -45,13 +48,14 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - Preference helpers for listing all notes and removing bookmarks.
 - Repository helpers for Juz/page index lookup.
 - Clearer accessibility content descriptions on primary reader and library actions.
+- Reader polish: progress bar, previous/next surah, keep-screen-on, auto last-read on scroll, Arabic RTL + line height (PR #4).
+- Published release APK `v0.2.0-alpha01` via GitHub Actions (full offline content package).
+- Real-device QA passed: scrolling, search, bookmark, notes, copy/share, resume, library tabs.
 
-### Remaining before v0.2.0-alpha
-- Final reader UX polish on real devices (Arabic typography, scrolling feel).
-- Accessibility and small/large-screen layout review on hardware.
-- Full offline 114-surah QA (requires CI-generated package / device APK).
-- Device testing of scrolling, search, bookmark, notes, copy/share, resume, Juz/page jumps.
-- Final CI verification and release APK build (`v0.2.0-alpha`).
+### Optional later (not blocking)
+- Dedicated Arabic font asset for even clearer Mushaf-style rendering.
+- Hizb-quarter navigation UI beyond metadata display.
+- Audio recitation (future milestone).
 
 ## v0.1.0-alpha01 — Foundation
 
