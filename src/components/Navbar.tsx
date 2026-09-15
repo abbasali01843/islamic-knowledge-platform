@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, BookOpen, BookMarked, Search, MoreHorizontal } from 'lucide-react';
+import { Home, BookOpen, Clock, Moon, BookMarked } from 'lucide-react';
 
 interface NavbarProps {
   selectedTab: number;
@@ -15,9 +15,9 @@ export const Navbar: React.FC<NavbarProps> = ({ selectedTab, onSelectTab }) => {
   const destinations: NavDestination[] = [
     { label: 'হোম', icon: Home },
     { label: 'কুরআন', icon: BookOpen },
+    { label: 'নামাজ', icon: Clock },
+    { label: 'দোয়া', icon: Moon },
     { label: 'হাদিস', icon: BookMarked },
-    { label: 'খুঁজুন', icon: Search },
-    { label: 'আরও', icon: MoreHorizontal },
   ];
 
   return (

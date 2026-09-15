@@ -43,6 +43,13 @@ export interface NoteListItem {
   entry: NoteEntry;
 }
 
-export type HomeDestination = 'QURAN' | 'HADITH' | 'PRAYER' | 'DUA';
+export type HomeDestination =
+  | 'QURAN'
+  | 'HADITH'
+  | 'PRAYER'
+  | 'DUA'
+  | 'LEARN_SALAH'
+  | 'ZAKAT'
+  | 'CALENDAR';
 
 export type QuranLibraryTab = 'SURAHS' | 'JUZ' | 'PAGES' | 'BOOKMARKS' | 'NOTES';
