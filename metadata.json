@@ -1,0 +1,6 @@
+{
+  "name": "Islamic Knowledge Platform",
+  "description": "Bengali-first offline-first source-backed Islamic knowledge platform with 114-surah catalog, Quran reader, search, bookmarks, and notes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
