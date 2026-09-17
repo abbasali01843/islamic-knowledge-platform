@@ -1,46 +1,82 @@
-# Islamic Knowledge Platform (Web)
+# Islamic Knowledge Platform
 
 > **Bengali-first · Offline-first · Source-backed Islamic knowledge & practice**
 
-A responsive React + Vite web application rewrite of the Islamic Knowledge Platform, preserving all core features, architecture, and design aesthetics from the original Android app.
+Monorepo with **two clients** sharing the same product vision:
 
-## 🌙 Core Features
+| Client | Stack | Status |
+|--------|--------|--------|
+| **Android** | Kotlin · Jetpack Compose · Material 3 | `v0.2.0-alpha01` released · root Gradle project |
+| **Web** | React 18 · Vite · Tailwind · TypeScript | Active development (prayer, hadith, dua, zakat, calendar) |
 
-- **114-Surah Catalog**: Complete Quran catalog with Bengali, English, and Arabic names, revelation type (Meccan / Medinan), and ayah counts.
-- **Offline Quran Reader**:
-  - Uthmani Arabic script with right-to-left display and authentic calligraphy font (Amiri).
-  - Bengali translations (Rowwad Translation Center, QuranEnc).
-  - Toggles for displaying Arabic (`عربي`) and Bengali (`বাংলা`).
-  - Adjustable reading font scaling (80% – 150%).
-  - Reading progress indicator and reading resume banner.
-  - Previous / Next Surah navigation bar.
-- **Bookmarks & Notes**:
-  - Offline bookmarking of ayahs with local persistence.
-  - Personal note taking with editing and deletion capabilities.
-  - Dedicated Bookmarks and Notes library tabs.
-- **Quran Search**:
-  - Instant client-side search across offline ayahs in Bengali and Arabic.
-- **Home & Quick Actions**:
-  - Prayer status banner and quick access cards to Quran, Hadith, Salah, and Dua modules.
-- **Islamic Green Aesthetic**:
-  - Consistent light and dark modes following Material 3 Islamic color palettes (`#176B4D` primary, `#D4F2E2` container).
+[![Android CI](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml/badge.svg)](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/android-ci.yml)
+[![Web CI](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/web-ci.yml/badge.svg)](https://github.com/abbasali01843/islamic-knowledge-platform/actions/workflows/web-ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/abbasali01843/islamic-knowledge-platform?include_prereleases&label=latest%20release)](https://github.com/abbasali01843/islamic-knowledge-platform/releases)
 
-## 🛠 Tech Stack
+## 📱 Android — Download
 
-- **Framework**: React 18 with TypeScript
-- **Bundler**: Vite
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Typography**: Amiri (Arabic), Hind Siliguri (Bengali), Plus Jakarta Sans (UI)
+**[⬇️ APK v0.2.0-alpha01](https://github.com/abbasali01843/islamic-knowledge-platform/releases/download/v0.2.0-alpha01/islamic-knowledge-platform-debug.apk)**
 
-## 🚀 Running Locally
+Offline Quran reader: 114 surahs, Bengali translation, Juz/page index, bookmarks, notes, search, resume. Device QA passed.
+
+> **min SDK 26** · package `com.islamicknowledge.platform`
+
+## 🌐 Web — Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Build for production:
-```bash
-npm run build
+Build: `npm run build` → `dist/`
+
+Web modules in progress: Quran, Salah + Qibla, Hadith, Dua, Zakat, Hijri calendar, Learn Salah.
+
+## 🗂 Repository layout (monorepo)
+
+```text
+# Android (Gradle root — current)
+app/  core/  feature/  scripts/  gradle/
+settings.gradle.kts  build.gradle.kts  gradlew
+
+# Web (Vite root — current)
+src/  index.html  package.json  vite.config.ts  tsconfig.json
+
+# Shared docs & CI
+README.md  CHANGE.md  DEVELOPMENT.md
+.github/workflows/android-ci.yml
+.github/workflows/web-ci.yml
+.github/workflows/release-apk.yml
 ```
+
+> **Roadmap:** optionally nest clients under `android/` and `web/` folders later; path-filtered CI already treats them as separate pipelines.
+
+## ✨ Principles
+
+- Offline-first core knowledge
+- Source-backed religious content
+- Bengali-first UX
+- Privacy-friendly (no account required for core features)
+
+## 🗺️ Release roadmap
+
+- `v0.1.0-alpha` — Foundation ✅
+- `v0.2.0-alpha` — Quran (Android) ✅
+- Web parity + Salah / Hadith / Dua — in progress
+- `v0.3.0-alpha` — Hadith (Android module)
+- `v0.4.0-alpha` — Salah + Qibla (Android)
+- … → `v1.0.0` stable
+
+## 📊 Current status
+
+| Track | Version / focus |
+|-------|-----------------|
+| Android release | `v0.2.0-alpha01` |
+| Android `main` build | Restored Gradle root (this PR) |
+| Web | Feature expansion on `src/` |
+
+See [`CHANGE.md`](CHANGE.md) and [`DEVELOPMENT.md`](DEVELOPMENT.md).
+
+## 📄 License
+
+Application source and third-party religious content licenses are documented separately.
