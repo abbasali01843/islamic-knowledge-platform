@@ -12,8 +12,8 @@ android {
         applicationId = "com.islamicknowledge.platform"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-alpha01"
+        versionCode = 3
+        versionName = "0.3.0-alpha01"
     }
 
     compileOptions {
@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":feature:home"))
     implementation(project(":feature:quran"))
+    implementation(project(":feature:prayer"))
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
     implementation("androidx.activity:activity-compose:1.10.0")
     implementation("androidx.compose.ui:ui")
