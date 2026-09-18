@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.MoreHoriz
+import androidx.compose.material.icons.rounded.Mosque
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -31,6 +32,7 @@ import com.islamicknowledge.platform.core.design.IslamicKnowledgeTheme
 import com.islamicknowledge.platform.core.model.quran.Surah
 import com.islamicknowledge.platform.feature.home.HomeDestination
 import com.islamicknowledge.platform.feature.home.HomeScreen
+import com.islamicknowledge.platform.feature.prayer.PrayerScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
 import com.islamicknowledge.platform.feature.quran.QuranScreen
 import com.islamicknowledge.platform.feature.quran.QuranSearchScreen
@@ -51,7 +53,7 @@ private fun IslamicKnowledgeApp() {
     val destinations = listOf(
         Destination("হোম") { Icon(Icons.Rounded.Home, contentDescription = null) },
         Destination("কুরআন") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
-        Destination("হাদিস") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
+        Destination("নামাজ") { Icon(Icons.Rounded.Mosque, contentDescription = null) },
         Destination("খুঁজুন") { Icon(Icons.Rounded.Search, contentDescription = null) },
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
@@ -62,6 +64,7 @@ private fun IslamicKnowledgeApp() {
     val isReaderOpen = selected == 1 && selectedSurah != null
 
     fun openQuran() { selected = 1; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openPrayer() { selected = 2; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSurah(surah: Surah, ayah: Int?) {
         selected = 1
@@ -102,8 +105,9 @@ private fun IslamicKnowledgeApp() {
                     onQuickActionClick = { destination ->
                         when (destination) {
                             HomeDestination.QURAN -> openQuran()
-                            HomeDestination.HADITH -> openPlaceholder(2)
-                            HomeDestination.PRAYER, HomeDestination.DUA -> openPlaceholder(4)
+                            HomeDestination.PRAYER -> openPrayer()
+                            HomeDestination.HADITH -> openPlaceholder(4)
+                            HomeDestination.DUA -> openPlaceholder(4)
                         }
                     },
                 )
@@ -123,6 +127,7 @@ private fun IslamicKnowledgeApp() {
                         )
                     }
                 }
+                2 -> PrayerScreen(modifier = Modifier.fillMaxSize())
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
                 else -> PlaceholderScreen(destinations[selected].label)
             }
