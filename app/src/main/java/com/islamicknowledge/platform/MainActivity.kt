@@ -34,6 +34,7 @@ import com.islamicknowledge.platform.core.design.IslamicKnowledgeTheme
 import com.islamicknowledge.platform.core.model.quran.Surah
 import com.islamicknowledge.platform.feature.home.HomeDestination
 import com.islamicknowledge.platform.feature.hadith.HadithScreen
+import com.islamicknowledge.platform.feature.qibla.QiblaScreen
 import com.islamicknowledge.platform.feature.dua.DuaScreen
 import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.prayer.PrayerScreen
@@ -88,6 +89,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
     fun openPrayer() { selected = 2; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openHadith() { selected = 4; moreRoute = 1; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openDua() { selected = 4; moreRoute = 2; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openQibla() { selected = 4; moreRoute = 3; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSurah(surah: Surah, ayah: Int?) {
         selected = 1
@@ -152,7 +154,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
                 }
                 2 -> PrayerScreen(modifier = Modifier.fillMaxSize())
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
-                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); else -> PlaceholderScreen("আরও") }
+                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); 3 -> QiblaScreen(modifier = Modifier.fillMaxSize()); else -> PlaceholderScreen("আরও") }
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
