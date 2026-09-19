@@ -235,7 +235,7 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
                 );
               })}
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -264,7 +264,7 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
                 );
               })}
             </div>
-          )}
+          </div>
         </div>
       )}
 
