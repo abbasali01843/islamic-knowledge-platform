@@ -5,7 +5,6 @@ const SOURCE_LABEL = 'Fawaz Ahmed Hadith API';
 const SOURCE_URL = 'https://github.com/fawazahmed0/hadith-api';
 
 type ApiHadith = { hadithnumber?: number | string; hadithNumber?: number | string; text?: string; hadithArabic?: string; hadithBengali?: string; reference?: { hadith?: number | string }; grades?: Array<{ grade?: string }>; grade?: string };
-type CachePayload = { savedAt: number; items: HadithItem[] };
 const BOOKS = [
   { id: 'bukhari', api: 'bukhari', name: 'সহীহুল বুখারী' },
   { id: 'muslim', api: 'muslim', name: 'সহীহ মুসলিম' },
