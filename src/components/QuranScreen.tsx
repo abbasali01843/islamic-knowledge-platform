@@ -21,15 +21,8 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
     [lastRead]
   );
 
-  const hasIndex = useMemo(() => QuranReaderRepository.hasStructuralIndex(), []);
-  const juzNumbers = useMemo(() => {
-    const nums = QuranReaderRepository.availableJuzNumbers();
-    return nums.length > 0 ? nums : Array.from({ length: 30 }, (_, i) => i + 1);
-  }, []);
-  const pageNumbers = useMemo(() => {
-    const pages = QuranReaderRepository.availablePageNumbers();
-    return pages.length > 0 ? pages : Array.from({ length: 604 }, (_, i) => i + 1);
-  }, []);
+  const juzNumbers = useMemo(() => Array.from({ length: 30 }, (_, i) => i + 1), []);
+  const pageNumbers = useMemo(() => Array.from({ length: 604 }, (_, i) => i + 1), []);
 
   const filteredSurahs = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,9 +48,7 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
       const a = parseInt(parts[1], 10);
       const catalog = findQuranSurah(s);
       if (!catalog) return;
-      const ayahs = QuranReaderRepository.ayahsForSurah(s);
-      const ayah = ayahs.find((x) => x.number === a);
-      items.push({ surah: catalog, ayah, ayahNumber: a });
+      items.push({ surah: catalog, ayah: undefined, ayahNumber: a });
     });
     return items.sort((x, y) => {
       if (x.surah.number !== y.surah.number) return x.surah.number - y.surah.number;
@@ -79,26 +70,23 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
     return items;
   }, [libraryVersion]);
 
-  const openJuz = (juz: number) => {
-    const hit = QuranReaderRepository.firstAyahForJuz(juz);
-    if (hit) {
-      const surah = findQuranSurah(hit.surahNumber);
-      if (surah) onSurahClick(surah, hit.ayah.number);
-    } else {
-      // Fallback default: approximate surah for juz
-      const surah = findQuranSurah(Math.min(114, Math.max(1, Math.floor(juz * 3.8))));
-      if (surah) onSurahClick(surah, 1);
+  const openJuz = async (juz: number) => {
+    try {
+      const hit = await QuranReaderRepository.firstAyahForJuz(juz);
+      const surah = hit ? findQuranSurah(hit.surahNumber) : null;
+      if (surah) onSurahClick(surah, hit?.ayah.number ?? 1);
+    } catch {
+      window.alert('পারা সূচি অনলাইন থেকে লোড করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
     }
   };
 
-  const openPage = (page: number) => {
-    const hit = QuranReaderRepository.firstAyahForPage(page);
-    if (hit) {
-      const surah = findQuranSurah(hit.surahNumber);
-      if (surah) onSurahClick(surah, hit.ayah.number);
-    } else {
-      const surah = findQuranSurah(1);
-      if (surah) onSurahClick(surah, 1);
+  const openPage = async (page: number) => {
+    try {
+      const hit = await QuranReaderRepository.firstAyahForPage(page);
+      const surah = hit ? findQuranSurah(hit.surahNumber) : null;
+      if (surah) onSurahClick(surah, hit?.ayah.number ?? 1);
+    } catch {
+      window.alert('পৃষ্ঠা সূচি অনলাইন থেকে লোড করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।');
     }
   };
 
@@ -225,23 +213,11 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
       {/* JUZ TAB */}
       {selectedTab === 'JUZ' && (
         <div className="space-y-3">
-          {!hasIndex ? (
-            <div className="text-center py-12 px-4 space-y-2">
-              <BookOpen className="w-10 h-10 mx-auto text-[#717A74] dark:text-[#8B958E]" />
-              <h3 className="font-semibold text-base text-[#181D19] dark:text-[#E1E5E1]">
-                পারা সূচি পুরো কনটেন্ট প্যাকেজে উপলব্ধ
-              </h3>
-              <p className="text-sm text-[#414A45] dark:text-[#C1CAC4]">
-                CI বিল্ডের পর ৩০ পারার নেভিগেশন চালু হবে।
-              </p>
-            </div>
-          ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-[#717A74] dark:text-[#8B958E]">প্রতিটি পারার সূচি অনলাইন API থেকে খোলা হবে।</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {juzNumbers.map((juz) => {
-                const hit = QuranReaderRepository.firstAyahForJuz(juz);
-                const sub = hit
-                  ? `${findQuranSurah(hit.surahNumber)?.nameBengali || `সূরা ${hit.surahNumber}`} • আয়াত ${hit.ayah.number}`
-                  : 'শুরুর আয়াত';
+                const sub = 'অনলাইন সূচি খুলতে ট্যাপ করুন';
                 return (
                   <button
                     key={juz}
@@ -266,23 +242,11 @@ export const QuranScreen: React.FC<QuranScreenProps> = ({ onSurahClick }) => {
       {/* PAGES TAB */}
       {selectedTab === 'PAGES' && (
         <div className="space-y-3">
-          {!hasIndex ? (
-            <div className="text-center py-12 px-4 space-y-2">
-              <BookOpen className="w-10 h-10 mx-auto text-[#717A74] dark:text-[#8B958E]" />
-              <h3 className="font-semibold text-base text-[#181D19] dark:text-[#E1E5E1]">
-                পৃষ্ঠা সূচি পুরো কনটেন্ট প্যাকেজে উপলব্ধ
-              </h3>
-              <p className="text-sm text-[#414A45] dark:text-[#C1CAC4]">
-                পূর্ণ ৬০৪ পৃষ্ঠার সূচি CI বিল্ডে জেনারেট হয়।
-              </p>
-            </div>
-          ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-[#717A74] dark:text-[#8B958E]">প্রতিটি মুশহাফ পৃষ্ঠা অনলাইন API থেকে খোলা হবে।</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {pageNumbers.map((page) => {
-                const hit = QuranReaderRepository.firstAyahForPage(page);
-                const sub = hit
-                  ? `${findQuranSurah(hit.surahNumber)?.nameBengali || `সূরা ${hit.surahNumber}`} • আয়াত ${hit.ayah.number}`
-                  : 'শুরুর আয়াত';
+                const sub = 'অনলাইন সূচি খুলতে ট্যাপ করুন';
                 return (
                   <button
                     key={page}
