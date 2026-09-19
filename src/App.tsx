@@ -52,5 +52,6 @@ export const App:React.FC=()=>{
    </>)}
   </main>
   {!showWebModules&&!isReaderOpen&&<Navbar selectedTab={activeSpecialModule?-1:selectedTab} onSelectTab={idx=>navigate(['/', '/quran','/prayer','/dua','/hadith'][idx]||'/')}/>}
+  <PwaInstallPrompt />
  </div>;
 };
