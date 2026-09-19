@@ -26,3 +26,5 @@ include(":feature:quran")
 include(":feature:prayer")
 include(":feature:hadith")
 include(":feature:dua")
+
+include(":feature:qibla")
