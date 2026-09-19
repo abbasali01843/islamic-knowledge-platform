@@ -28,3 +28,5 @@ include(":feature:hadith")
 include(":feature:dua")
 
 include(":feature:qibla")
+include(":feature:calendar")
+include(":feature:zakat")
