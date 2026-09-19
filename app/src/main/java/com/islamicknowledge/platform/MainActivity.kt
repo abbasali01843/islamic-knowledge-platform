@@ -42,6 +42,7 @@ import com.islamicknowledge.platform.feature.hajj.HajjScreen
 import com.islamicknowledge.platform.feature.seerah.SeerahScreen
 import com.islamicknowledge.platform.feature.qibla.QiblaScreen
 import com.islamicknowledge.platform.feature.dua.DuaScreen
+
 import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.prayer.PrayerScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
@@ -102,6 +103,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
     fun openRamadan() { selected = 4; moreRoute = 7; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openHajj() { selected = 4; moreRoute = 8; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSeerah() { selected = 4; moreRoute = 9; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openMoreRoute(route: Int) { selected = 4; moreRoute = route; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSurah(surah: Surah, ayah: Int?) {
         selected = 1
@@ -166,7 +168,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
                 }
                 2 -> PrayerScreen(modifier = Modifier.fillMaxSize())
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
-                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); 3 -> QiblaScreen(modifier = Modifier.fillMaxSize()); 4 -> CalendarScreen(modifier = Modifier.fillMaxSize()); 5 -> ZakatScreen(modifier = Modifier.fillMaxSize()); 6 -> LearnSalahScreen(modifier = Modifier.fillMaxSize()); 7 -> RamadanScreen(modifier = Modifier.fillMaxSize()); 8 -> HajjScreen(modifier = Modifier.fillMaxSize()); 9 -> SeerahScreen(modifier = Modifier.fillMaxSize()); else -> PlaceholderScreen("আরও") }
+                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); 3 -> QiblaScreen(modifier = Modifier.fillMaxSize()); 4 -> CalendarScreen(modifier = Modifier.fillMaxSize()); 5 -> ZakatScreen(modifier = Modifier.fillMaxSize()); 6 -> LearnSalahScreen(modifier = Modifier.fillMaxSize()); 7 -> RamadanScreen(modifier = Modifier.fillMaxSize()); 8 -> HajjScreen(modifier = Modifier.fillMaxSize()); 9 -> SeerahScreen(modifier = Modifier.fillMaxSize()); else -> MoreScreen(onItemClick = ::openMoreRoute, modifier = Modifier.fillMaxSize()) }
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
