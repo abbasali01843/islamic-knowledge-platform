@@ -1,0 +1,66 @@
+package com.islamicknowledge.platform.feature.qibla
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.islamicknowledge.platform.core.design.components.SectionHeader
+import kotlin.math.*
+
+private const val KAABA_LAT = 21.422487
+private const val KAABA_LON = 39.826206
+
+private fun qiblaBearing(lat: Double, lon: Double): Double {
+    val p1 = Math.toRadians(lat)
+    val p2 = Math.toRadians(KAABA_LAT)
+    val dl = Math.toRadians(KAABA_LON - lon)
+    return (Math.toDegrees(atan2(sin(dl) * cos(p2), cos(p1) * sin(p2) - sin(p1) * cos(p2) * cos(dl))) + 360.0) % 360.0
+}
+
+@Composable
+fun QiblaScreen(modifier: Modifier = Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = remember(context) { context.getSharedPreferences("prayer_prefs", Context.MODE_PRIVATE) }
+    val lat = prefs.getString("gps_lat", null)?.toDoubleOrNull()
+    val lon = prefs.getString("gps_lon", null)?.toDoubleOrNull()
+    val bearing = remember(lat, lon) { if (lat != null && lon != null) qiblaBearing(lat, lon) else Double.NaN }
+    var heading by remember { mutableDoubleStateOf(Double.NaN) }
+    DisposableEffect(Unit) {
+        val manager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                val matrix = FloatArray(9)
+                SensorManager.getRotationMatrixFromVector(matrix, event.values)
+                val orientation = FloatArray(3)
+                SensorManager.getOrientation(matrix, orientation)
+                heading = (Math.toDegrees(orientation[0].toDouble()) + 360.0) % 360.0
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        if (sensor != null) manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+        onDispose { manager.unregisterListener(listener) }
+    }
+    Column(modifier.fillMaxSize()) {
+        SectionHeader(title = "কিবলা", modifier = Modifier.padding(16.dp))
+        Card(Modifier.fillMaxWidth().padding(16.dp)) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (bearing.isNaN()) Text("নামাজ পেজে GPS অবস্থান চালু করুন।")
+                else {
+                    Text("কাবার দিক: " + bearing.roundToInt() + "°", style = MaterialTheme.typography.headlineSmall)
+                    if (heading.isNaN()) Text("এই ডিভাইসে Rotation Vector sensor পাওয়া যায়নি।")
+                    else {
+                        val delta = ((bearing - heading + 540.0) % 360.0) - 180.0
+                        Text("বর্তমান দিক: " + heading.roundToInt() + "°")
+                        Text(if (abs(delta) < 5.0) "✓ আপনি কিবলার দিকে আছেন" else "কিবলার দিকে " + abs(delta).roundToInt() + "° ঘুরুন")
+                    }
+                }
+            }
+        }
+    }
+}
