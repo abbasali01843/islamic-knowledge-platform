@@ -3,6 +3,8 @@ import type { HadithGrade, HadithItem } from '../types/hadith';
 const API_ROOT = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1';
 const CACHE_KEY = 'ikp_hadith_api_cache_v1';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const SOURCE_LABEL = 'Fawaz Ahmed Hadith API';
+const SOURCE_URL = 'https://github.com/fawazahmed0/hadith-api';
 
 type ApiHadith = { hadithnumber?: number | string; hadithNumber?: number | string; text?: string; hadithArabic?: string; hadithBengali?: string; reference?: { hadith?: number | string }; grades?: Array<{ grade?: string }>; grade?: string };
 type CachePayload = { savedAt: number; items: HadithItem[] };
@@ -10,12 +12,24 @@ const BOOKS = [
   { id: 'bukhari', api: 'bukhari', name: 'সহীহুল বুখারী' },
   { id: 'muslim', api: 'muslim', name: 'সহীহ মুসলিম' },
   { id: 'tirmidhi', api: 'tirmidhi', name: 'জামে আত-তিরমিযী' },
+  { id: 'abudawud', api: 'abudawud', name: 'সুনান আবু দাউদ' },
+  { id: 'nasai', api: 'nasai', name: 'সুনান আন-নাসাঈ' },
+  { id: 'ibnmajah', api: 'ibnmajah', name: 'সুনান ইবন মাজাহ' },
 ] as const;
 
 async function getJson(url: string): Promise<unknown> {
-  const response = await fetch(url, { headers: { Accept: 'application/json' } });
-  if (!response.ok) throw new Error('Hadith API ' + response.status);
-  return response.json();
+  const urls = [url.replace('.json', '.min.json'), url];
+  let lastError: unknown;
+  for (const candidate of urls) {
+    try {
+      const response = await fetch(candidate, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('Hadith API ' + response.status);
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Hadith API unavailable');
 }
 function rows(payload: unknown): ApiHadith[] {
   if (Array.isArray(payload)) return payload as ApiHadith[];
@@ -32,8 +46,11 @@ function numberOf(item: ApiHadith, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 function gradeOf(item: ApiHadith): HadithGrade {
-  const raw = String(item.grade ?? item.grades?.[0]?.grade ?? '').toLowerCase();
-  return raw.includes('hasan') ? 'HASAN' : 'SAHIH';
+  const raw = String(item.grade ?? item.grades?.[0]?.grade ?? '').toLowerCase().trim();
+  if (raw.includes('hasan')) return 'HASAN';
+  if (raw.includes('sahih') || raw.includes('ṣaḥīḥ')) return 'SAHIH';
+  if (raw.includes('muttafa')) return 'MUTTAFAAQ_ALAIH';
+  return 'UNKNOWN';
 }
 function normalizePair(book: (typeof BOOKS)[number], arabic: ApiHadith[], bengali: ApiHadith[]): HadithItem[] {
   const byNumber = new Map<number, ApiHadith>();
@@ -46,7 +63,7 @@ function normalizePair(book: (typeof BOOKS)[number], arabic: ApiHadith[], bengal
       id: 'api-' + book.id + '-' + number, bookId: book.id, bookNameBengali: book.name, hadithNumber: number,
       chapterNameBengali: 'অনলাইন হাদিস সংগ্রহ', narratorBengali: '',
       arabicText: ar.text ?? ar.hadithArabic ?? '', bengaliText: bn?.text ?? bn?.hadithBengali ?? '',
-      grade, gradeLabelBengali: grade === 'HASAN' ? 'হাসান' : 'সহীহ', topicId: 'ALL', tags: ['api', book.id]
+      grade, gradeLabelBengali: grade === 'HASAN' ? 'হাসান' : grade === 'SAHIH' ? 'সহীহ' : grade === 'MUTTAFAAQ_ALAIH' ? 'মুত্তাফাকুন আলাইহ' : 'মান যাচাই করা হয়নি', topicId: 'ALL', tags: ['api', book.id], sourceLabel: SOURCE_LABEL, sourceUrl: SOURCE_URL
     };
   }).filter(item => item.arabicText && item.bengaliText);
 }
