@@ -15,6 +15,7 @@ import kotlin.math.tan
 
 enum class Madhab { HANAFI, STANDARD }
 enum class CalcMethod { IFB, MWL, ISNA }
+enum class HighLatitudeRule { ANGLE_BASED, ONE_SEVENTH, MIDDLE_OF_NIGHT }
 
 data class PrayerLocation(
     val id: String,
@@ -115,6 +116,7 @@ object PrayerCalculator {
         location: PrayerLocation = PrayerLocations.default,
         madhab: Madhab = Madhab.HANAFI,
         method: CalcMethod = CalcMethod.IFB,
+        highLatitudeRule: HighLatitudeRule = HighLatitudeRule.ANGLE_BASED,
     ): CalculatedPrayers {
         val tz = java.util.TimeZone.getTimeZone(location.zoneId)
         val cal = Calendar.getInstance(tz).apply { time = now }
@@ -131,17 +133,25 @@ object PrayerCalculator {
         }
         val timezoneHours = tz.getOffset(now.time) / 3600000.0
         val dhuhrDec = 12.0 + timezoneHours - location.longitude / 15.0 - eq / 60.0
-        val hRise = hourAngle(-0.833, location.latitude, decl) ?: 90.0
-        val sunriseDec = dhuhrDec - hRise / 15.0
-        val sunsetDec = dhuhrDec + hRise / 15.0
-        val hFajr = hourAngle(-fajrAngle, location.latitude, decl) ?: 108.0
-        val fajrDec = dhuhrDec - hFajr / 15.0
+        val hRise = hourAngle(-0.833, location.latitude, decl)
+        val sunriseDec = hRise?.let { dhuhrDec - it / 15.0 } ?: dhuhrDec - 6.0
+        val sunsetDec = hRise?.let { dhuhrDec + it / 15.0 } ?: dhuhrDec + 6.0
+        val nightLength = sunsetDec - sunriseDec
+        fun nightPortion(angle: Double): Double = when (highLatitudeRule) {
+            HighLatitudeRule.ANGLE_BASED -> angle / 60.0
+            HighLatitudeRule.ONE_SEVENTH -> 1.0 / 7.0
+            HighLatitudeRule.MIDDLE_OF_NIGHT -> 0.5
+        }
+        val hFajr = hourAngle(-fajrAngle, location.latitude, decl)
+        val fajrDec = hFajr?.let { dhuhrDec - it / 15.0 }
+            ?: sunriseDec - nightLength * nightPortion(fajrAngle)
         val shadow = if (madhab == Madhab.HANAFI) 2.0 else 1.0
         val asrAlt = r2d(atan(1.0 / (shadow + tan(kotlin.math.abs(d2r(location.latitude - decl))))))
-        val hAsr = hourAngle(asrAlt, location.latitude, decl) ?: 60.0
-        val asrDec = dhuhrDec + hAsr / 15.0
-        val hIsha = hourAngle(-ishaAngle, location.latitude, decl) ?: 108.0
-        val ishaDec = dhuhrDec + hIsha / 15.0
+        val hAsr = hourAngle(asrAlt, location.latitude, decl)
+        val asrDec = hAsr?.let { dhuhrDec + it / 15.0 } ?: dhuhrDec + 6.0
+        val hIsha = hourAngle(-ishaAngle, location.latitude, decl)
+        val ishaDec = hIsha?.let { dhuhrDec + it / 15.0 }
+            ?: sunsetDec + nightLength * nightPortion(ishaAngle)
 
         val fajr = hoursToDate(cal, fajrDec)
         val sunrise = hoursToDate(cal, sunriseDec)
