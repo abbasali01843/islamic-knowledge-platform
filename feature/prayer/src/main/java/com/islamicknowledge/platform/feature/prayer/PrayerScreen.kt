@@ -24,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -224,6 +225,19 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Text("ইফতার", style = MaterialTheme.typography.labelMedium)
                             Text(PrayerCalculator.formatTimeBn(times.iftar), style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
+            }
+            item {
+                if (!PrayerAlarmSettings.canScheduleExact(context)) {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("সময়মতো নামাজের নোটিফিকেশন", style = MaterialTheme.typography.titleMedium)
+                            Text("নির্ভুল সময়ে নোটিফিকেশন পেতে “Alarms & reminders” অনুমতি দিন। অনুমতি না থাকলেও সাধারণ নোটিফিকেশন চালু থাকবে।", style = MaterialTheme.typography.bodyMedium)
+                            Button(onClick = { PrayerAlarmSettings.openExactAlarmSettings(context) }) {
+                                Text("অনুমতি দিন")
+                            }
                         }
                     }
                 }
