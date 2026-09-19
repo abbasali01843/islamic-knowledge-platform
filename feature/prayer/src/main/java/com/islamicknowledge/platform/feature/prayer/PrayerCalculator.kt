@@ -21,7 +21,8 @@ data class PrayerLocation(
     val nameBengali: String,
     val latitude: Double,
     val longitude: Double,
-    val timezone: Double,
+    val timezone: Double = 6.0,
+    val zoneId: String = "Asia/Dhaka",
 )
 
 data class PrayerLabel(val key: String, val nameBengali: String, val nameArabic: String, val time: Date)
@@ -42,19 +43,19 @@ data class CalculatedPrayers(
 )
 
 object PrayerLocations {
-    val default = PrayerLocation("dhaka", "ঢাকা", 23.8103, 90.4125, 6.0)
+    val default = PrayerLocation("dhaka", "ঢাকা", 23.8103, 90.4125, 6.0, "Asia/Dhaka")
     val all = listOf(
         default,
-        PrayerLocation("chattogram", "চট্টগ্রাম", 22.3569, 91.7832, 6.0),
-        PrayerLocation("sylhet", "সিলেট", 24.8949, 91.8687, 6.0),
-        PrayerLocation("rajshahi", "রাজশাহী", 24.3636, 88.6241, 6.0),
-        PrayerLocation("khulna", "খুলনা", 22.8456, 89.5403, 6.0),
-        PrayerLocation("barishal", "বরিশাল", 22.7010, 90.3535, 6.0),
-        PrayerLocation("rangpur", "রংপুর", 25.7439, 89.2752, 6.0),
-        PrayerLocation("mymensingh", "ময়মনসিংহ", 24.7471, 90.4203, 6.0),
-        PrayerLocation("gazipur", "গাজীপুর", 23.9999, 90.4203, 6.0),
-        PrayerLocation("cumilla", "কুমিল্লা", 23.4607, 91.1809, 6.0),
-        PrayerLocation("coxs-bazar", "কক্সবাজার", 21.4272, 92.0058, 6.0),
+        PrayerLocation("chattogram", "চট্টগ্রাম", 22.3569, 91.7832, 6.0, "Asia/Dhaka"),
+        PrayerLocation("sylhet", "সিলেট", 24.8949, 91.8687, 6.0, "Asia/Dhaka"),
+        PrayerLocation("rajshahi", "রাজশাহী", 24.3636, 88.6241, 6.0, "Asia/Dhaka"),
+        PrayerLocation("khulna", "খুলনা", 22.8456, 89.5403, 6.0, "Asia/Dhaka"),
+        PrayerLocation("barishal", "বরিশাল", 22.7010, 90.3535, 6.0, "Asia/Dhaka"),
+        PrayerLocation("rangpur", "রংপুর", 25.7439, 89.2752, 6.0, "Asia/Dhaka"),
+        PrayerLocation("mymensingh", "ময়মনসিংহ", 24.7471, 90.4203, 6.0, "Asia/Dhaka"),
+        PrayerLocation("gazipur", "গাজীপুর", 23.9999, 90.4203, 6.0, "Asia/Dhaka"),
+        PrayerLocation("cumilla", "কুমিল্লা", 23.4607, 91.1809, 6.0, "Asia/Dhaka"),
+        PrayerLocation("coxs-bazar", "কক্সবাজার", 21.4272, 92.0058, 6.0, "Asia/Dhaka"),
     )
 }
 
@@ -115,7 +116,8 @@ object PrayerCalculator {
         madhab: Madhab = Madhab.HANAFI,
         method: CalcMethod = CalcMethod.IFB,
     ): CalculatedPrayers {
-        val cal = Calendar.getInstance().apply { time = now }
+        val tz = java.util.TimeZone.getTimeZone(location.zoneId)
+        val cal = Calendar.getInstance(tz).apply { time = now }
         val jd = julianDay(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH))
         val (decl, eq) = sunPosition(jd)
         val fajrAngle = when (method) {
@@ -127,7 +129,8 @@ object PrayerCalculator {
             CalcMethod.MWL -> 17.0
             CalcMethod.ISNA -> 15.0
         }
-        val dhuhrDec = 12.0 + location.timezone - location.longitude / 15.0 - eq / 60.0
+        val timezoneHours = tz.getOffset(now.time) / 3600000.0
+        val dhuhrDec = 12.0 + timezoneHours - location.longitude / 15.0 - eq / 60.0
         val hRise = hourAngle(-0.833, location.latitude, decl) ?: 90.0
         val sunriseDec = dhuhrDec - hRise / 15.0
         val sunsetDec = dhuhrDec + hRise / 15.0
