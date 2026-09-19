@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.islamicknowledge.platform.core.design.components.SectionHeader
 
-data class DuaItem(val id: String, val category: String, val title: String, val arabic: String, val meaning: String, val reference: String, val repeat: Int)
+data class DuaItem(val id: String, val category: String, val subCategory: String?, val title: String, val arabic: String, val transliteration: String, val meaning: String, val reference: String, val virtue: String?, val repeat: Int)
 
 @Composable
 fun DuaScreen(modifier: Modifier = Modifier) {
