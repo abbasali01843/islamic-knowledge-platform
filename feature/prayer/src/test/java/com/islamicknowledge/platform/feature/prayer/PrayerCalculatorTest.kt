@@ -31,6 +31,38 @@ class PrayerCalculatorTest {
     }
 
     @Test
+    fun chattogramPrayerTimesAreChronologicallyOrdered() {
+        val result = PrayerCalculator.calculate(
+            now = date(2026, 9, 19, 12, 0),
+            location = PrayerLocations.all.first { it.id == "chattogram" },
+            madhab = Madhab.HANAFI,
+            method = CalcMethod.IFB,
+        )
+
+        assertTrue(result.fajr.before(result.sunrise))
+        assertTrue(result.sunrise.before(result.dhuhr))
+        assertTrue(result.dhuhr.before(result.asr))
+        assertTrue(result.asr.before(result.maghrib))
+        assertTrue(result.maghrib.before(result.isha))
+    }
+
+    @Test
+    fun highLatitudeRulesKeepBangladeshTimesValid() {
+        val now = date(2026, 9, 19, 12, 0)
+        for (rule in HighLatitudeRule.values()) {
+            val result = PrayerCalculator.calculate(
+                now = now,
+                location = PrayerLocations.all.first { it.id == "chattogram" },
+                madhab = Madhab.HANAFI,
+                method = CalcMethod.IFB,
+                highLatitudeRule = rule,
+            )
+            assertTrue(result.fajr.before(result.sunrise))
+            assertTrue(result.maghrib.before(result.isha))
+        }
+    }
+
+    @Test
     fun hanafiAsrIsLaterThanStandardAsr() {
         val now = date(2026, 9, 19, 12, 0)
         val hanafi = PrayerCalculator.calculate(
