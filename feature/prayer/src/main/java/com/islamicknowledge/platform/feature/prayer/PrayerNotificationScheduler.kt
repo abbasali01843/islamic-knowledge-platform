@@ -10,7 +10,7 @@ object PrayerNotificationScheduler {
     private const val BASE_REQUEST_CODE = 4100
     private const val ACTION_PRAYER = "com.islamicknowledge.platform.PRAYER_ALARM"
 
-    fun schedule(context: Context, times: CalculatedPrayers) {
+    fun schedule(context: Context, times: CalculatedPrayers, requestCodeOffset: Int = 0) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val prayers = listOf(
             "fajr" to times.fajr,
@@ -26,7 +26,7 @@ object PrayerNotificationScheduler {
                 putExtra("prayer_key", key)
             }
             val pending = PendingIntent.getBroadcast(
-                context, BASE_REQUEST_CODE + index, intent,
+                context, BASE_REQUEST_CODE + requestCodeOffset + index, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
