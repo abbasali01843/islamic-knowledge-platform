@@ -44,7 +44,7 @@ export const HadithScreen: React.FC = () => {
 
   const [dailyHadithCopied, setDailyHadithCopied] = useState(false);
   const [liveHadiths, setLiveHadiths] = useState<HadithItem[]>([]);
-  const [apiState, setApiState] = useState<'loading' | 'online' | 'cache' | 'error'>('loading');
+  const [apiState, setApiState] = useState<'loading' | 'online' | 'error'>('loading');
   const [nextSection, setNextSection] = useState(2);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -58,10 +58,10 @@ export const HadithScreen: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    fetchLiveHadiths().then(({ items, fromCache }) => {
+    fetchLiveHadiths().then(({ items }) => {
       if (cancelled) return;
       setLiveHadiths(items);
-      setApiState(fromCache ? 'cache' : 'online');
+      setApiState('online');
     }).catch(() => { if (!cancelled) setApiState('error'); });
     return () => { cancelled = true; };
   }, []);
@@ -230,8 +230,8 @@ export const HadithScreen: React.FC = () => {
 
 
         <div className="flex items-center justify-between rounded-2xl border border-[#E8EFEA] dark:border-[#3A4D43]/60 bg-white dark:bg-[#1A221C] px-4 py-3 text-xs">
-          <div className="flex items-center gap-2 font-semibold"><span className={"w-2 h-2 rounded-full " + (apiState === 'online' ? 'bg-emerald-500' : apiState === 'cache' ? 'bg-amber-500' : apiState === 'error' ? 'bg-red-500' : 'bg-slate-400 animate-pulse')} />
-            <span>{apiState === 'online' ? 'অনলাইন হাদিস API সক্রিয়' : apiState === 'cache' ? 'ক্যাশ থেকে হাদিস দেখানো হচ্ছে' : apiState === 'error' ? 'অনলাইন API পাওয়া যাচ্ছে না — স্থানীয় হাদিস চালু আছে' : 'হাদিস API সংযোগ হচ্ছে...'}</span></div>
+          <div className="flex items-center gap-2 font-semibold"><span className={"w-2 h-2 rounded-full " + (apiState === 'online' ? 'bg-emerald-500' : apiState === 'error' ? 'bg-red-500' : 'bg-slate-400 animate-pulse')} />
+            <span>{apiState === 'online' ? 'অনলাইন হাদিস API সক্রিয়' : apiState === 'error' ? 'অনলাইন API পাওয়া যাচ্ছে না — আবার চেষ্টা করুন' : 'হাদিস API সংযোগ হচ্ছে...'}</span></div>
           <span className="text-[#717A74]">{toBengaliNumerals(liveHadiths.length)} অনলাইন</span>
         </div>
 
