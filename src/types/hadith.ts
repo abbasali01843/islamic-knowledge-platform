@@ -1,4 +1,4 @@
-export type HadithGrade = 'SAHIH' | 'HASAN' | 'MUTTAFAAQ_ALAIH';
+export type HadithGrade = 'SAHIH' | 'HASAN' | 'MUTTAFAAQ_ALAIH' | 'UNKNOWN';
 
 export interface HadithBook {
   id: string;
@@ -32,6 +32,8 @@ export interface HadithItem {
   explanationBengali?: string;
   topicId: string;
   tags: string[];
+  sourceLabel?: string;
+  sourceUrl?: string;
   isNawawi40?: boolean;
   nawawiNumber?: number;
 }
