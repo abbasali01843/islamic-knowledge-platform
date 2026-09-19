@@ -1,6 +1,9 @@
 package com.islamicknowledge.platform.feature.prayer
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.islamicknowledge.platform.core.design.components.SectionHeader
 import kotlinx.coroutines.delay
 import java.util.Date
@@ -49,6 +55,15 @@ class PrayerPreferences(context: Context) {
         else -> CalcMethod.IFB
     }
     fun setMethod(m: CalcMethod) = prefs.edit().putString("method", m.name).apply()
+    fun getGpsLocation(): PrayerLocation? {
+        val lat = prefs.getString("gps_lat", null)?.toDoubleOrNull() ?: return null
+        val lon = prefs.getString("gps_lon", null)?.toDoubleOrNull() ?: return null
+        val name = prefs.getString("gps_name", "আমার অবস্থান") ?: "আমার অবস্থান"
+        return PrayerLocation("gps", name, lat, lon, 6.0)
+    }
+    fun setGpsLocation(latitude: Double, longitude: Double) {
+        prefs.edit().putString("gps_lat", latitude.toString()).putString("gps_lon", longitude.toString()).putString("gps_name", "আমার অবস্থান").apply()
+    }
 }
 
 @Composable
@@ -60,7 +75,28 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
     var method by remember { mutableStateOf(preferences.getMethod()) }
     var now by remember { mutableStateOf(Date()) }
     var pickLocation by remember { mutableStateOf(false) }
-    val location = PrayerLocations.all.firstOrNull { it.id == locationId } ?: PrayerLocations.default
+    var gpsLocation by remember { mutableStateOf(preferences.getGpsLocation()) }
+    val location = gpsLocation ?: (PrayerLocations.all.firstOrNull { it.id == locationId } ?: PrayerLocations.default)
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val candidates = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+            val found = candidates.asSequence()
+                .filter { manager.isProviderEnabled(it) }
+                .mapNotNull { provider ->
+                    try { manager.getLastKnownLocation(provider) } catch (_: SecurityException) { null }
+                }
+                .maxByOrNull { it.time }
+            if (found != null) {
+                preferences.setGpsLocation(found.latitude, found.longitude)
+                gpsLocation = preferences.getGpsLocation()
+            }
+        }
+    }
     val times = remember(now, location, madhab, method) {
         PrayerCalculator.calculate(now, location, madhab, method)
     }
@@ -101,9 +137,30 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     FilterChip(
-                        selected = true,
-                        onClick = { pickLocation = true },
-                        label = { Text(location.nameBengali) },
+                        selected = gpsLocation != null,
+                        onClick = {
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                val found = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
+                                    .asSequence()
+                                    .filter { manager.isProviderEnabled(it) }
+                                    .mapNotNull { provider ->
+                                        try { manager.getLastKnownLocation(provider) } catch (_: SecurityException) { null }
+                                    }
+                                    .maxByOrNull { it.time }
+                                if (found != null) {
+                                    preferences.setGpsLocation(found.latitude, found.longitude)
+                                    gpsLocation = preferences.getGpsLocation()
+                                }
+                            } else {
+                                locationPermissionLauncher.launch(
+                                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                )
+                            }
+                        },
+                        label = { Text(if (gpsLocation != null) "আমার অবস্থান" else location.nameBengali) },
                         leadingIcon = { Icon(Icons.Rounded.LocationOn, contentDescription = null) },
                     )
                     FilterChip(
