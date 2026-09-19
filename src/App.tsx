@@ -41,10 +41,48 @@ export const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  const applyRoute = () => {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    const queryModule = new URLSearchParams(window.location.search).get('module');
+    setShowWebModules(false);
+    setActiveSpecialModule(null);
+    setSelectedSurahNumber(0);
+    setSelectedAyah(0);
+
+    if (queryModule === 'quran') { setSelectedTab(1); return; }
+    if (queryModule === 'hadith') { setSelectedTab(4); return; }
+
+    if (path.startsWith('/quran/')) {
+      const n = Number(path.split('/')[2]);
+      if (Number.isInteger(n) && findQuranSurah(n)) {
+        setSelectedTab(1); setSelectedSurahNumber(n); return;
+      }
+    }
+    const tabs: Record<string, number> = {'/':0,'/quran':1,'/prayer':2,'/dua':3,'/hadith':4};
+    if (tabs[path] !== undefined) { setSelectedTab(tabs[path]); return; }
+    if (path === '/learn/salah') { setActiveSpecialModule('LEARN_SALAH'); return; }
+    if (path === '/zakat') { setActiveSpecialModule('ZAKAT'); return; }
+    if (path === '/calendar') { setActiveSpecialModule('CALENDAR'); return; }
+    if (['/qibla','/ramadan','/hajj','/seerah','/quiz'].includes(path)) setShowWebModules(true);
+  };
+
+  const navigate = (path: string) => {
+    window.history.pushState({}, '', path);
+    applyRoute();
+  };
+
+  useEffect(() => {
+    applyRoute();
+    const onPopState = () => applyRoute();
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
   const selectedSurah = findQuranSurah(selectedSurahNumber);
   const isReaderOpen = selectedTab === 1 && selectedSurah !== undefined;
 
   const openQuran = () => {
+    navigate('/quran');
     setActiveSpecialModule(null);
     setSelectedTab(1);
     setSelectedSurahNumber(0);
@@ -52,6 +90,7 @@ export const App: React.FC = () => {
   };
 
   const openSurah = (surah: Surah, ayahNumber: number | null) => {
+    navigate('/quran/' + surah.number);
     setActiveSpecialModule(null);
     setSelectedTab(1);
     setSelectedSurahNumber(surah.number);
@@ -64,30 +103,36 @@ export const App: React.FC = () => {
         openQuran();
         break;
       case 'PRAYER':
+        navigate('/prayer');
         setActiveSpecialModule(null);
         setSelectedTab(2);
         setSelectedSurahNumber(0);
         setSelectedAyah(0);
         break;
       case 'DUA':
+        navigate('/dua');
         setActiveSpecialModule(null);
         setSelectedTab(3);
         setSelectedSurahNumber(0);
         setSelectedAyah(0);
         break;
       case 'HADITH':
+        navigate('/hadith');
         setActiveSpecialModule(null);
         setSelectedTab(4);
         setSelectedSurahNumber(0);
         setSelectedAyah(0);
         break;
       case 'LEARN_SALAH':
+        navigate('/learn/salah');
         setActiveSpecialModule('LEARN_SALAH');
         break;
       case 'ZAKAT':
+        navigate('/zakat');
         setActiveSpecialModule('ZAKAT');
         break;
       case 'CALENDAR':
+        navigate('/calendar');
         setActiveSpecialModule('CALENDAR');
         break;
     }
@@ -107,7 +152,7 @@ export const App: React.FC = () => {
                 v0.4.0
               </span>
             </div>
-            <button type="button" onClick={() => setShowWebModules(true)} className="px-3 py-2 rounded-xl bg-[#D4F2E2] dark:bg-[#005236] text-[#176B4D] dark:text-[#D4F2E2] text-xs font-bold">আরও</button>
+            <button type="button" onClick={() => navigate('/qibla')} className="px-3 py-2 rounded-xl bg-[#D4F2E2] dark:bg-[#005236] text-[#176B4D] dark:text-[#D4F2E2] text-xs font-bold">আরও</button>
             <button
               type="button"
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -126,9 +171,9 @@ export const App: React.FC = () => {
         {!showWebModules && (activeSpecialModule === 'LEARN_SALAH' ? (
           <LearnSalahScreen onBack={() => setActiveSpecialModule(null)} />
         ) : activeSpecialModule === 'ZAKAT' ? (
-          <ZakatScreen onBack={() => setActiveSpecialModule(null)} />
+          <ZakatScreen onBack={() => navigate('/')} />
         ) : activeSpecialModule === 'CALENDAR' ? (
-          <CalendarScreen onBack={() => setActiveSpecialModule(null)} />
+          <CalendarScreen onBack={() => navigate('/')} />
         ) : (
           <>
             {selectedTab === 0 && (
@@ -143,14 +188,8 @@ export const App: React.FC = () => {
                   <QuranReaderScreen
                     surah={selectedSurah}
                     initialAyah={selectedAyah > 0 ? selectedAyah : null}
-                    onBack={() => {
-                      setSelectedSurahNumber(0);
-                      setSelectedAyah(0);
-                    }}
-                    onNavigateToSurah={(next) => {
-                      setSelectedSurahNumber(next.number);
-                      setSelectedAyah(0);
-                    }}
+                    onBack={() => navigate('/quran')}
+                    onNavigateToSurah={(next) => navigate('/quran/' + next.number)}
                   />
                 )}
               </>
@@ -170,6 +209,8 @@ export const App: React.FC = () => {
         <Navbar
           selectedTab={activeSpecialModule ? -1 : selectedTab}
           onSelectTab={(idx) => {
+            const paths = ['/', '/quran', '/prayer', '/dua', '/hadith'];
+            navigate(paths[idx] || '/');
             setActiveSpecialModule(null);
             setSelectedTab(idx);
             if (idx !== 1) {
