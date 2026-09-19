@@ -42,6 +42,7 @@ import com.islamicknowledge.platform.feature.hajj.HajjScreen
 import com.islamicknowledge.platform.feature.seerah.SeerahScreen
 import com.islamicknowledge.platform.feature.qibla.QiblaScreen
 import com.islamicknowledge.platform.feature.dua.DuaScreen
+import com.islamicknowledge.platform.MoreScreen
 
 import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.prayer.PrayerScreen
@@ -120,6 +121,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
                         selected = selected == index,
                         onClick = {
                             selected = index
+                            if (index == 4) moreRoute = 0
                             if (index != 1) {
                                 selectedSurahNumber = 0
                                 selectedAyah = 0
