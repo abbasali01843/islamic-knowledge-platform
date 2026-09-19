@@ -1,116 +1,102 @@
 import { ReaderAyah } from '../types';
-import rawData from './quran_reader.json';
 
-interface RawAyah {
+const API_ROOT = 'https://api.alquran.cloud/v1';
+const ARABIC_EDITION = 'quran-uthmani';
+const BENGALI_EDITION = 'bn.bengali';
+const SOURCE = 'কুরআন: Al Quran Cloud API • Arabic: Uthmani • বাংলা: Muhiuddin Khan (Tanzil edition)';
+
+interface ApiAyah {
   number: number;
-  arabic: string;
-  bengali: string;
-  juz?: number | null;
-  hizb?: number | null;
-  page?: number | null;
-  hasSajdah?: boolean;
+  text: string;
+  numberInSurah: number;
+  juz?: number;
+  hizbQuarter?: number;
+  page?: number;
+  sajda?: boolean | { id?: number; recommended?: boolean; obligatory?: boolean };
 }
 
-interface RawSurah {
-  number: number;
-  ayahCount: number;
-  ayahs: RawAyah[];
+interface ApiSurah {
+  ayahs: ApiAyah[];
 }
 
-interface RawDocument {
-  schemaVersion: number;
-  generatedAt: string;
-  arabicSource: {
-    name: string;
-    version: string;
-    url: string;
-    attribution: string;
-  };
-  bengaliSource: {
-    name: string;
-    version: string;
-    url: string;
-    publisher?: string;
-    attribution: string;
-  };
-  surahs: RawSurah[];
+interface ApiResponse {
+  code: number;
+  status: string;
+  data: ApiSurah;
 }
 
-const document: RawDocument = rawData as RawDocument;
+async function getJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error('কুরআন API সংযোগ ব্যর্থ (' + response.status + ')');
+  const payload = (await response.json()) as T;
+  return payload;
+}
+
+function hasSajdah(value: ApiAyah['sajda']): boolean {
+  return typeof value === 'boolean' ? value : Boolean(value);
+}
+
+function normalize(arabic: ApiAyah[], bengali: ApiAyah[]): ReaderAyah[] {
+  const bn = new Map(bengali.map((ayah) => [ayah.numberInSurah, ayah]));
+  return arabic.map((ayah) => {
+    const translation = bn.get(ayah.numberInSurah);
+    return {
+      number: ayah.numberInSurah,
+      arabic: ayah.text,
+      bengali: translation?.text ?? '',
+      juz: ayah.juz ?? null,
+      hizb: ayah.hizbQuarter ?? null,
+      page: ayah.page ?? null,
+      hasSajdah: hasSajdah(ayah.sajda),
+    };
+  });
+}
 
 export class QuranReaderRepository {
-  static ayahsForSurah(surahNumber: number): ReaderAyah[] {
-    const surah = document.surahs.find((s) => s.number === surahNumber);
-    return surah ? surah.ayahs : [];
+  static async ayahsForSurah(surahNumber: number): Promise<ReaderAyah[]> {
+    const [arabic, bengali] = await Promise.all([
+      getJson<ApiResponse>(API_ROOT + '/surah/' + surahNumber + '/' + ARABIC_EDITION),
+      getJson<ApiResponse>(API_ROOT + '/surah/' + surahNumber + '/' + BENGALI_EDITION),
+    ]);
+    if (arabic.code !== 200 || bengali.code !== 200) throw new Error('কুরআন ডেটা পাওয়া যায়নি');
+    return normalize(arabic.data.ayahs, bengali.data.ayahs);
   }
 
-  static search(query: string): Array<{ surahNumber: number; ayah: ReaderAyah }> {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    const results: Array<{ surahNumber: number; ayah: ReaderAyah }> = [];
-    for (const surah of document.surahs) {
-      for (const ayah of surah.ayahs) {
-        if (
-          ayah.arabic.toLowerCase().includes(q) ||
-          ayah.bengali.toLowerCase().includes(q)
-        ) {
-          results.push({ surahNumber: surah.number, ayah });
-        }
-      }
-    }
-    return results;
+  static async firstAyahForJuz(juz: number): Promise<{ surahNumber: number; ayah: ReaderAyah } | null> {
+    const payload = await getJson<ApiResponse>(API_ROOT + '/juz/' + juz + '/' + ARABIC_EDITION);
+    const first = payload.data.ayahs[0];
+    return first ? {
+      surahNumber: Number((first as ApiAyah & { surah?: { number?: number } }).surah?.number ?? 1),
+      ayah: {
+        number: first.numberInSurah,
+        arabic: first.text,
+        bengali: '',
+        juz: first.juz ?? juz,
+        hizb: first.hizbQuarter ?? null,
+        page: first.page ?? null,
+        hasSajdah: hasSajdah(first.sajda),
+      },
+    } : null;
   }
 
-  /** First (surahNumber, ayah) that belongs to the given Juz, if content has metadata. */
-  static firstAyahForJuz(juz: number): { surahNumber: number; ayah: ReaderAyah } | null {
-    for (const surah of document.surahs) {
-      const ayah = surah.ayahs.find((a) => a.juz === juz);
-      if (ayah) return { surahNumber: surah.number, ayah };
-    }
-    return null;
-  }
-
-  /** First (surahNumber, ayah) on the given Mushaf page, if content has metadata. */
-  static firstAyahForPage(page: number): { surahNumber: number; ayah: ReaderAyah } | null {
-    for (const surah of document.surahs) {
-      const ayah = surah.ayahs.find((a) => a.page === page);
-      if (ayah) return { surahNumber: surah.number, ayah };
-    }
-    return null;
-  }
-
-  static availableJuzNumbers(): number[] {
-    const set = new Set<number>();
-    for (const surah of document.surahs) {
-      for (const ayah of surah.ayahs) {
-        if (ayah.juz && ayah.juz > 0) {
-          set.add(ayah.juz);
-        }
-      }
-    }
-    return Array.from(set).sort((a, b) => a - b);
-  }
-
-  static availablePageNumbers(): number[] {
-    const set = new Set<number>();
-    for (const surah of document.surahs) {
-      for (const ayah of surah.ayahs) {
-        if (ayah.page && ayah.page > 0) {
-          set.add(ayah.page);
-        }
-      }
-    }
-    return Array.from(set).sort((a, b) => a - b);
-  }
-
-  static hasStructuralIndex(): boolean {
-    return (
-      this.availableJuzNumbers().length > 0 ||
-      this.availablePageNumbers().length > 0
-    );
+  static async firstAyahForPage(page: number): Promise<{ surahNumber: number; ayah: ReaderAyah } | null> {
+    const payload = await getJson<ApiResponse>(API_ROOT + '/page/' + page + '/' + ARABIC_EDITION);
+    const first = payload.data.ayahs[0];
+    return first ? {
+      surahNumber: Number((first as ApiAyah & { surah?: { number?: number } }).surah?.number ?? 1),
+      ayah: {
+        number: first.numberInSurah,
+        arabic: first.text,
+        bengali: '',
+        juz: first.juz ?? null,
+        hizb: first.hizbQuarter ?? null,
+        page: first.page ?? page,
+        hasSajdah: hasSajdah(first.sajda),
+      },
+    } : null;
   }
 
   static sourceAttribution(): string {
-    return `বাংলা অনুবাদ: ${document.bengaliSource.name} • V${document.bengaliSource.version} • QuranEnc.com`;
+    return SOURCE;
   }
 }
