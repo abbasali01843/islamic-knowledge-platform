@@ -2,8 +2,6 @@ package com.islamicknowledge.platform.feature.prayer
 
 import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.location.LocationManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.islamicknowledge.platform.core.design.components.SectionHeader
 import kotlinx.coroutines.delay
 import java.util.Date
@@ -84,16 +81,8 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
         if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         ) {
-            val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val candidates = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-            val found = candidates.asSequence()
-                .filter { manager.isProviderEnabled(it) }
-                .mapNotNull { provider ->
-                    try { manager.getLastKnownLocation(provider) } catch (_: SecurityException) { null }
-                }
-                .maxByOrNull { it.time }
-            if (found != null) {
-                preferences.setGpsLocation(found.latitude, found.longitude)
+            PrayerLocationProvider.requestCurrentLocation(context) { latitude, longitude ->
+                preferences.setGpsLocation(latitude, longitude)
                 gpsLocation = preferences.getGpsLocation()
             }
         }
@@ -140,19 +129,9 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
                     FilterChip(
                         selected = gpsLocation != null,
                         onClick = {
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                            ) {
-                                val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                val found = listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
-                                    .asSequence()
-                                    .filter { manager.isProviderEnabled(it) }
-                                    .mapNotNull { provider ->
-                                        try { manager.getLastKnownLocation(provider) } catch (_: SecurityException) { null }
-                                    }
-                                    .maxByOrNull { it.time }
-                                if (found != null) {
-                                    preferences.setGpsLocation(found.latitude, found.longitude)
+                            if (PrayerLocationProvider.hasPermission(context)) {
+                                PrayerLocationProvider.requestCurrentLocation(context) { latitude, longitude ->
+                                    preferences.setGpsLocation(latitude, longitude)
                                     gpsLocation = preferences.getGpsLocation()
                                 }
                             } else {
