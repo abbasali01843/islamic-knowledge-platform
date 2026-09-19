@@ -22,7 +22,7 @@ import { HadithCard } from './HadithCard';
 import { NawawiFortyView } from './NawawiFortyView';
 import { HadithBooksView } from './HadithBooksView';
 import { toBengaliNumerals } from '../../utils/prayerCalculation';
-import { fetchLiveHadiths } from '../../services/hadithApi';
+import { fetchHadithSection, fetchLiveHadiths } from '../../services/hadithApi';
 
 type HadithTab = 'topics' | 'nawawi' | 'books' | 'bookmarks';
 
@@ -45,6 +45,8 @@ export const HadithScreen: React.FC = () => {
   const [dailyHadithCopied, setDailyHadithCopied] = useState(false);
   const [liveHadiths, setLiveHadiths] = useState<HadithItem[]>([]);
   const [apiState, setApiState] = useState<'loading' | 'online' | 'cache' | 'error'>('loading');
+  const [nextSection, setNextSection] = useState(2);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     try {
@@ -63,6 +65,30 @@ export const HadithScreen: React.FC = () => {
     }).catch(() => { if (!cancelled) setApiState('error'); });
     return () => { cancelled = true; };
   }, []);
+
+  const loadNextSection = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    const section = nextSection;
+    try {
+      const results = await Promise.allSettled(
+        ['bukhari', 'muslim', 'tirmidhi', 'abudawud', 'nasai', 'ibnmajah'].map((bookId) =>
+          fetchHadithSection(bookId, section)
+        )
+      );
+      const items = results.flatMap((result) => result.status === 'fulfilled' ? result.value : []);
+      if (items.length) {
+        setLiveHadiths((prev) => {
+          const ids = new Set(prev.map((item) => item.id));
+          return [...prev, ...items.filter((item) => !ids.has(item.id))];
+        });
+        setNextSection((value) => value + 1);
+        setApiState('online');
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const toggleBookmark = (hadithId: string) => {
     setBookmarks((prev) =>
@@ -369,6 +395,17 @@ export const HadithScreen: React.FC = () => {
               </div>
             </div>
           )}
+
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={loadNextSection}
+              disabled={loadingMore}
+              className="px-5 py-2.5 rounded-2xl bg-[#176B4D] text-white text-xs font-bold disabled:opacity-60"
+            >
+              {loadingMore ? 'আরও হাদিস লোড হচ্ছে...' : `আরও হাদিস লোড করুন • সেকশন ${toBengaliNumerals(nextSection)}`}
+            </button>
+          </div>
 
           {/* Results Count */}
           <div className="flex items-center justify-between text-xs font-bold text-[#717A74] dark:text-[#8B958E] px-1">
