@@ -33,6 +33,8 @@ import androidx.compose.ui.Modifier
 import com.islamicknowledge.platform.core.design.IslamicKnowledgeTheme
 import com.islamicknowledge.platform.core.model.quran.Surah
 import com.islamicknowledge.platform.feature.home.HomeDestination
+import com.islamicknowledge.platform.feature.hadith.HadithScreen
+import com.islamicknowledge.platform.feature.dua.DuaScreen
 import com.islamicknowledge.platform.feature.home.HomeScreen
 import com.islamicknowledge.platform.feature.prayer.PrayerScreen
 import com.islamicknowledge.platform.feature.quran.QuranReaderScreen
@@ -83,6 +85,8 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
 
     fun openQuran() { selected = 1; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPrayer() { selected = 2; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openHadith() { selected = 4; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openDua() { selected = 5; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSurah(surah: Surah, ayah: Int?) {
         selected = 1
@@ -124,8 +128,8 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
                         when (destination) {
                             HomeDestination.QURAN -> openQuran()
                             HomeDestination.PRAYER -> openPrayer()
-                            HomeDestination.HADITH -> openPlaceholder(4)
-                            HomeDestination.DUA -> openPlaceholder(4)
+                            HomeDestination.HADITH -> openHadith()
+                            HomeDestination.DUA -> openDua()
                         }
                     },
                 )
