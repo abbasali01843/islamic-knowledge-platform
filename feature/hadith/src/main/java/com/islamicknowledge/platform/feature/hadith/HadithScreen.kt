@@ -33,8 +33,12 @@ fun HadithScreen(modifier: Modifier = Modifier) {
             items(list, key = { it.id }) { item ->
                 Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(item.book + " • " + item.number, style = MaterialTheme.typography.titleMedium)
-                    Text(item.chapter ?: "", style = MaterialTheme.typography.labelMedium)\n                    Text(item.narrator ?: "", style = MaterialTheme.typography.bodySmall)\n                    Text(item.arabic, style = MaterialTheme.typography.titleLarge)
-                    Text(item.bengali, style = MaterialTheme.typography.bodyLarge)\n                    item.grade?.let { Text(it, style = MaterialTheme.typography.labelMedium) }\n                    item.explanation?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                    Text(item.chapter ?: "", style = MaterialTheme.typography.labelMedium)
+                    Text(item.narrator ?: "", style = MaterialTheme.typography.bodySmall)
+                    Text(item.arabic, style = MaterialTheme.typography.titleLarge)
+                    Text(item.bengali, style = MaterialTheme.typography.bodyLarge)
+                    item.grade?.let { Text(it, style = MaterialTheme.typography.labelMedium) }
+                    item.explanation?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                     Text(item.reference, style = MaterialTheme.typography.labelMedium)
                 }}
             }
