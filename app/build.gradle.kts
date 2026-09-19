@@ -56,3 +56,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.5")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
+
+    implementation(project(":feature:ramadan"))
+    implementation(project(":feature:hajj"))
+    implementation(project(":feature:seerah"))
