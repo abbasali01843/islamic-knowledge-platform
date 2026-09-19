@@ -37,38 +37,10 @@ export const PrayerTimesScreen: React.FC = () => {
   const [selectedSubTab, setSelectedSubTab] = useState<PrayerSubTab>('TODAY');
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // Persistent Location
-  const [location, setLocation] = useState<LocationConfig>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('user_prayer_location');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // fallback
-        }
-      }
-    }
-    return DEFAULT_LOCATION;
-  });
+  const [location, setLocation] = useState<LocationConfig>(DEFAULT_LOCATION);
 
-  // Persistent Madhab (Hanafi default in Bangladesh)
-  const [madhab, setMadhab] = useState<Madhab>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('user_prayer_madhab') as Madhab;
-      if (saved === 'HANAFI' || saved === 'STANDARD') return saved;
-    }
-    return 'HANAFI';
-  });
-
-  // Persistent Calculation Method (Islamic Foundation Bangladesh default)
-  const [calcMethod, setCalcMethod] = useState<CalculationMethod>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('user_calc_method') as CalculationMethod;
-      if (saved) return saved;
-    }
-    return 'IFB';
-  });
+  const [madhab, setMadhab] = useState<Madhab>('HANAFI');
+  const [calcMethod, setCalcMethod] = useState<CalculationMethod>('IFB');
 
   // Real-time second ticker for live countdown
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -83,17 +55,14 @@ export const PrayerTimesScreen: React.FC = () => {
   // Save changes
   const handleSelectLocation = (loc: LocationConfig) => {
     setLocation(loc);
-    localStorage.setItem('user_prayer_location', JSON.stringify(loc));
   };
 
   const handleToggleMadhab = (newMadhab: Madhab) => {
     setMadhab(newMadhab);
-    localStorage.setItem('user_prayer_madhab', newMadhab);
   };
 
   const handleToggleCalcMethod = (newMethod: CalculationMethod) => {
     setCalcMethod(newMethod);
-    localStorage.setItem('user_calc_method', newMethod);
   };
 
   // Daily Salah Tracker state
@@ -108,28 +77,14 @@ export const PrayerTimesScreen: React.FC = () => {
 
   const todayKey = getLocalDateKey(currentTime);
 
-  const loadTracker = (dateKey: string): DailySalahTracker => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`salah_tracker_${dateKey}`);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved) as DailySalahTracker;
-          if (parsed.date === dateKey) return parsed;
-        } catch {
-          // fallback
-        }
-      }
-    }
-
-    return {
-      date: dateKey,
-      fajr: false,
-      dhuhr: false,
-      asr: false,
-      maghrib: false,
-      isha: false,
-    };
-  };
+  const loadTracker = (dateKey: string): DailySalahTracker => ({
+    date: dateKey,
+    fajr: false,
+    dhuhr: false,
+    asr: false,
+    maghrib: false,
+    isha: false,
+  });
 
   const [tracker, setTracker] = useState<DailySalahTracker>(() => loadTracker(todayKey));
 
@@ -141,7 +96,6 @@ export const PrayerTimesScreen: React.FC = () => {
   const toggleSalahCompleted = (prayer: keyof Omit<DailySalahTracker, 'date'>) => {
     setTracker((prev) => {
       const updated = { ...prev, [prayer]: !prev[prayer] };
-      localStorage.setItem(`salah_tracker_${todayKey}`, JSON.stringify(updated));
       return updated;
     });
   };
