@@ -14,6 +14,11 @@ import kotlin.math.sin
 import kotlin.math.tan
 
 enum class Madhab { HANAFI, STANDARD }
+/**
+ * Calculation profiles. IFB is retained for backward-compatible saved preferences.
+ * It represents the app's Bangladesh 18°/18° profile; it is not claimed to reproduce
+ * the Islamic Foundation Bangladesh timetable methodology.
+ */
 enum class CalcMethod { IFB, MWL, ISNA }
 enum class HighLatitudeRule { ANGLE_BASED, ONE_SEVENTH, MIDDLE_OF_NIGHT }
 
