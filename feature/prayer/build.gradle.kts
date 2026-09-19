@@ -19,6 +19,7 @@ kotlin { jvmToolchain(17) }
 
 dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.activity:activity-compose:1.10.0")
     testImplementation("junit:junit:4.13.2")
     implementation(project(":core:design"))
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
