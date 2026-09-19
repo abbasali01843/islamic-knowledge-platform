@@ -41,14 +41,31 @@ export const QuranReaderScreen: React.FC<QuranReaderScreenProps> = ({
   const [noteInput, setNoteInput] = useState('');
   const [noteVersion, setNoteVersion] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [allAyahs, setAllAyahs] = useState<ReaderAyah[]>([]);
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [loadError, setLoadError] = useState('');
 
   const ayahRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const allAyahs = useMemo(
-    () => QuranReaderRepository.ayahsForSurah(surah.number),
-    [surah.number]
-  );
+  useEffect(() => {
+    let cancelled = false;
+    setAllAyahs([]);
+    setLoadState('loading');
+    setLoadError('');
+    QuranReaderRepository.ayahsForSurah(surah.number)
+      .then((items) => {
+        if (cancelled) return;
+        setAllAyahs(items);
+        setLoadState('ready');
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setLoadState('error');
+        setLoadError(error instanceof Error ? error.message : 'কুরআন ডেটা লোড করা যায়নি');
+      });
+    return () => { cancelled = true; };
+  }, [surah.number]);
 
   const previousSurah = useMemo(
     () => quranSurahs.find((s) => s.number === surah.number - 1),
@@ -329,12 +346,27 @@ export const QuranReaderScreen: React.FC<QuranReaderScreenProps> = ({
         )}
 
         {/* Ayahs List */}
-        {filteredAyahs.length === 0 ? (
+        {loadState === 'loading' ? (
+          <div className="text-center py-20 px-4 space-y-3">
+            <div className="mx-auto w-8 h-8 rounded-full border-2 border-[#176B4D] border-t-transparent animate-spin" />
+            <p className="text-sm text-[#414A45] dark:text-[#C1CAC4]">অনলাইন থেকে কুরআনের আয়াত লোড হচ্ছে…</p>
+          </div>
+        ) : loadState === 'error' ? (
+          <div className="text-center py-20 px-4 space-y-3">
+            <p className="text-sm text-[#414A45] dark:text-[#C1CAC4]">{loadError}</p>
+            <button type="button" onClick={() => {
+              setLoadState('loading');
+              setLoadError('');
+              QuranReaderRepository.ayahsForSurah(surah.number).then(setAllAyahs).then(() => setLoadState('ready')).catch((error: unknown) => {
+                setLoadState('error');
+                setLoadError(error instanceof Error ? error.message : 'কুরআন ডেটা লোড করা যায়নি');
+              });
+            }} className="px-4 py-2 rounded-xl bg-[#176B4D] text-white text-sm font-semibold">আবার চেষ্টা করুন</button>
+          </div>
+        ) : filteredAyahs.length === 0 ? (
           <div className="text-center py-16 px-4">
             <p className="text-sm text-[#414A45] dark:text-[#C1CAC4]">
-              {allAyahs.length === 0
-                ? 'এই সূরার আয়াত ডেটা পাওয়া যায়নি।'
-                : 'কোনো আয়াত মেলেনি।'}
+              কোনো আয়াত মেলেনি।
             </p>
           </div>
         ) : (
