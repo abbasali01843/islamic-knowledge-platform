@@ -8,6 +8,7 @@ import android.location.LocationManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 object PrayerLocationProvider {
     fun hasPermission(context: Context): Boolean =
@@ -34,19 +35,20 @@ object PrayerLocationProvider {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val executor = Executors.newSingleThreadExecutor()
-            var delivered = false
+            val delivered = AtomicBoolean(false)
             providers.forEach { provider ->
                 runCatching {
                     manager.getCurrentLocation(provider, null, executor) { location ->
-                        if (!delivered && location != null) {
-                            delivered = true
+                        if (location != null && delivered.compareAndSet(false, true)) {
                             onResult(location.latitude, location.longitude)
+                            executor.shutdown()
                         }
                     }
                 }
             }
-            if (providers.isEmpty()) executor.shutdown()
-        } else {
+            if (providers.isEmpty()) {
+                executor.shutdown()
+            }        } else {
             providers.asSequence()
                 .mapNotNull {
                     provider ->
