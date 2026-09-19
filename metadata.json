@@ -1,6 +1,0 @@
-{
-  "name": "Islamic Knowledge Platform",
-  "description": "Bengali-first offline-first source-backed Islamic knowledge platform with 114-surah Quran, offline prayer times, Qibla compass, Sahih Hadith, Hisnul Muslim Duas, Salah & Wudu guide, Zakat calculator, and Hijri calendar.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
