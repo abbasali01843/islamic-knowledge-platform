@@ -160,7 +160,7 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
                     FilterChip(
                         selected = method == CalcMethod.IFB,
                         onClick = { method = CalcMethod.IFB; preferences.setMethod(CalcMethod.IFB) },
-                        label = { Text("IFB ১৮°") },
+                        label = { Text("বাংলাদেশ ১৮°") },
                     )
                     FilterChip(
                         selected = method == CalcMethod.MWL,
