@@ -152,6 +152,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
                 }
                 2 -> PrayerScreen(modifier = Modifier.fillMaxSize())
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
+                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); else -> PlaceholderScreen("আরও") }
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
