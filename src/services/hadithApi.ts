@@ -75,10 +75,10 @@ async function fetchSection(book: (typeof BOOKS)[number], section: number): Prom
   ]);
   return normalizePair(book, rows(arabic), rows(bengali));
 }
-function readCache(): HadithItem[] {
+async function readCache(): Promise<HadithItem[]> {
   try { const raw = await getWebData<string>(CACHE_KEY); if (!raw) return []; const parsed = JSON.parse(raw) as CachePayload; return Date.now() - parsed.savedAt <= CACHE_TTL_MS && Array.isArray(parsed.items) ? parsed.items : []; } catch { return []; }
 }
-function writeCache(items: HadithItem[]) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items })); } catch { /* optional */ } }
+async function writeCache(items: HadithItem[]) { try { await putWebData(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items })); } catch { /* optional */ } }
 export async function fetchHadithSection(bookId: string, section: number): Promise<HadithItem[]> {
   const book = BOOKS.find((item) => item.id === bookId);
   if (!book) throw new Error('Unknown Hadith book: ' + bookId);
@@ -86,11 +86,11 @@ export async function fetchHadithSection(bookId: string, section: number): Promi
 }
 
 export async function fetchLiveHadiths(): Promise<{ items: HadithItem[]; fromCache: boolean }> {
-  const cached = readCache();
+  const cached = await readCache();
   if (cached.length) return { items: cached, fromCache: true };
   const results = await Promise.allSettled(BOOKS.map(book => fetchSection(book, 1)));
   const items = results.flatMap(result => result.status === 'fulfilled' ? result.value : []);
   if (!items.length) throw new Error('Hadith API unavailable');
-  writeCache(items);
+  await writeCache(items);
   return { items, fromCache: false };
 }
