@@ -3,6 +3,7 @@ package com.islamicknowledge.platform
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -22,6 +23,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,12 +47,25 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { IslamicKnowledgeTheme { IslamicKnowledgeApp() } }
+        val notificationPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { }
+        setContent {
+            IslamicKnowledgeTheme {
+                IslamicKnowledgeApp(
+                    requestNotificationPermission = {
+                        if (android.os.Build.VERSION.SDK_INT >= 33) {
+                            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun IslamicKnowledgeApp() {
+private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
     val destinations = listOf(
         Destination("হোম") { Icon(Icons.Rounded.Home, contentDescription = null) },
         Destination("কুরআন") { Icon(Icons.AutoMirrored.Rounded.MenuBook, contentDescription = null) },
@@ -58,6 +74,9 @@ private fun IslamicKnowledgeApp() {
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
     var selected by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(selected) {
+        if (selected == 2) requestNotificationPermission()
+    }
     var selectedSurahNumber by rememberSaveable { mutableIntStateOf(0) }
     var selectedAyah by rememberSaveable { mutableIntStateOf(0) }
     val selectedSurah = findQuranSurah(selectedSurahNumber)
