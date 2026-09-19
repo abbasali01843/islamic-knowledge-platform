@@ -97,27 +97,46 @@ export const PrayerTimesScreen: React.FC = () => {
   };
 
   // Daily Salah Tracker state
-  const todayKey = currentTime.toISOString().split('T')[0];
-  const [tracker, setTracker] = useState<DailySalahTracker>(() => {
+  // Use Bangladesh/browser local calendar date, not UTC, so the tracker does not
+  // roll over at 6:00 AM in Bangladesh (UTC midnight).
+  const getLocalDateKey = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayKey = getLocalDateKey(currentTime);
+
+  const loadTracker = (dateKey: string): DailySalahTracker => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`salah_tracker_${todayKey}`);
+      const saved = localStorage.getItem(`salah_tracker_${dateKey}`);
       if (saved) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved) as DailySalahTracker;
+          if (parsed.date === dateKey) return parsed;
         } catch {
           // fallback
         }
       }
     }
+
     return {
-      date: todayKey,
+      date: dateKey,
       fajr: false,
       dhuhr: false,
       asr: false,
       maghrib: false,
       isha: false,
     };
-  });
+  };
+
+  const [tracker, setTracker] = useState<DailySalahTracker>(() => loadTracker(todayKey));
+
+  // Reset the tracker automatically when the local calendar date changes.
+  useEffect(() => {
+    setTracker(loadTracker(todayKey));
+  }, [todayKey]);
 
   const toggleSalahCompleted = (prayer: keyof Omit<DailySalahTracker, 'date'>) => {
     setTracker((prev) => {
