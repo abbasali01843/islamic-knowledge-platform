@@ -22,6 +22,7 @@ export const App: React.FC = () => {
   const [activeSpecialModule, setActiveSpecialModule] = useState<
     'LEARN_SALAH' | 'ZAKAT' | 'CALENDAR' | null
   >(null);
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator === 'undefined' ? true : navigator.onLine);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('app_theme');
@@ -30,6 +31,17 @@ export const App: React.FC = () => {
     }
     return false;
   });
+
+  useEffect(() => {
+    const online = () => setIsOnline(true);
+    const offline = () => setIsOnline(false);
+    window.addEventListener('online', online);
+    window.addEventListener('offline', offline);
+    return () => {
+      window.removeEventListener('online', online);
+      window.removeEventListener('offline', offline);
+    };
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -167,6 +179,11 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1">
+        {!isOnline && (
+          <div className="sticky top-0 z-40 px-4 py-2 text-center text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border-b border-amber-200 dark:border-amber-900">
+            ইন্টারনেট সংযোগ নেই — এই Web App অনলাইন-ভিত্তিক; ডাটা লোড করতে ইন্টারনেট প্রয়োজন।
+          </div>
+        )}
         {showWebModules ? <WebModulesScreen onBack={() => setShowWebModules(false)} /> : null}
         {!showWebModules && (activeSpecialModule === 'LEARN_SALAH' ? (
           <LearnSalahScreen onBack={() => setActiveSpecialModule(null)} />
