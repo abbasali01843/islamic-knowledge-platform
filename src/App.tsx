@@ -12,11 +12,13 @@ import { LearnSalahScreen } from './components/learn/LearnSalahScreen';
 import { ZakatScreen } from './components/zakat/ZakatScreen';
 import { CalendarScreen } from './components/calendar/CalendarScreen';
 import { Navbar } from './components/Navbar';
+import { WebModulesScreen } from './components/WebModulesScreen';
 
 export const App: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(0);
   const [selectedAyah, setSelectedAyah] = useState<number>(0);
+  const [showWebModules, setShowWebModules] = useState(false);
   const [activeSpecialModule, setActiveSpecialModule] = useState<
     'LEARN_SALAH' | 'ZAKAT' | 'CALENDAR' | null
   >(null);
@@ -119,7 +121,8 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {activeSpecialModule === 'LEARN_SALAH' ? (
+        {showWebModules ? <WebModulesScreen onBack={() => setShowWebModules(false)} /> : null}
+        {!showWebModules && (activeSpecialModule === 'LEARN_SALAH' ? (
           <LearnSalahScreen onBack={() => setActiveSpecialModule(null)} />
         ) : activeSpecialModule === 'ZAKAT' ? (
           <ZakatScreen onBack={() => setActiveSpecialModule(null)} />
@@ -158,11 +161,11 @@ export const App: React.FC = () => {
 
             {selectedTab === 4 && <HadithScreen />}
           </>
-        )}
+        ))}
       </main>
 
       {/* Bottom Navbar (hidden during reading mode) */}
-      {!isReaderOpen && (
+      {!showWebModules && !isReaderOpen && (
         <Navbar
           selectedTab={activeSpecialModule ? -1 : selectedTab}
           onSelectTab={(idx) => {
