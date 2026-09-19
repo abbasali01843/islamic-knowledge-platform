@@ -2,7 +2,7 @@ name: Web CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, web-standalone ]
     paths:
       - 'src/**'
       - 'index.html'
@@ -12,9 +12,10 @@ on:
       - 'vite.config.ts'
       - 'tsconfig.json'
       - 'web/**'
+      - 'public/**'
       - '.github/workflows/web-ci.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, web-standalone ]
     paths:
       - 'src/**'
       - 'index.html'
@@ -24,6 +25,7 @@ on:
       - 'vite.config.ts'
       - 'tsconfig.json'
       - 'web/**'
+      - 'public/**'
       - '.github/workflows/web-ci.yml'
   workflow_dispatch:
 
