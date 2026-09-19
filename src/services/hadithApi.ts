@@ -78,6 +78,12 @@ function readCache(): HadithItem[] {
   try { const raw = localStorage.getItem(CACHE_KEY); if (!raw) return []; const parsed = JSON.parse(raw) as CachePayload; return Date.now() - parsed.savedAt <= CACHE_TTL_MS && Array.isArray(parsed.items) ? parsed.items : []; } catch { return []; }
 }
 function writeCache(items: HadithItem[]) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items })); } catch { /* optional */ } }
+export async function fetchHadithSection(bookId: string, section: number): Promise<HadithItem[]> {
+  const book = BOOKS.find((item) => item.id === bookId);
+  if (!book) throw new Error('Unknown Hadith book: ' + bookId);
+  return fetchSection(book, section);
+}
+
 export async function fetchLiveHadiths(): Promise<{ items: HadithItem[]; fromCache: boolean }> {
   const cached = readCache();
   if (cached.length) return { items: cached, fromCache: true };
