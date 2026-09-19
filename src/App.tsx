@@ -107,6 +107,7 @@ export const App: React.FC = () => {
                 v0.4.0
               </span>
             </div>
+            <button type="button" onClick={() => setShowWebModules(true)} className="px-3 py-2 rounded-xl bg-[#D4F2E2] dark:bg-[#005236] text-[#176B4D] dark:text-[#D4F2E2] text-xs font-bold">আরও</button>
             <button
               type="button"
               onClick={() => setIsDarkMode(!isDarkMode)}
