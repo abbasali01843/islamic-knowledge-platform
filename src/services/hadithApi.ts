@@ -1,3 +1,4 @@
+import { getWebData, putWebData } from './webStorage';
 import type { HadithGrade, HadithItem } from '../types/hadith';
 
 const API_ROOT = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1';
@@ -75,7 +76,7 @@ async function fetchSection(book: (typeof BOOKS)[number], section: number): Prom
   return normalizePair(book, rows(arabic), rows(bengali));
 }
 function readCache(): HadithItem[] {
-  try { const raw = localStorage.getItem(CACHE_KEY); if (!raw) return []; const parsed = JSON.parse(raw) as CachePayload; return Date.now() - parsed.savedAt <= CACHE_TTL_MS && Array.isArray(parsed.items) ? parsed.items : []; } catch { return []; }
+  try { const raw = await getWebData<string>(CACHE_KEY); if (!raw) return []; const parsed = JSON.parse(raw) as CachePayload; return Date.now() - parsed.savedAt <= CACHE_TTL_MS && Array.isArray(parsed.items) ? parsed.items : []; } catch { return []; }
 }
 function writeCache(items: HadithItem[]) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), items })); } catch { /* optional */ } }
 export async function fetchHadithSection(bookId: string, section: number): Promise<HadithItem[]> {
