@@ -64,6 +64,9 @@ fun PrayerScreen(modifier: Modifier = Modifier) {
     val times = remember(now, location, madhab, method) {
         PrayerCalculator.calculate(now, location, madhab, method)
     }
+    LaunchedEffect(location, madhab, method, times.fajr) {
+        PrayerNotificationScheduler.schedule(context, times)
+    }
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000)
