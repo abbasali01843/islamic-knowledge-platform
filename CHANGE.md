@@ -2,6 +2,17 @@
 
 All notable changes to **Islamic Knowledge Platform** are tracked here by milestone and release.
 
+## v0.3.0-alpha — Salah (Android) + content policy
+
+### In progress / this track
+- `:feature:prayer` — offline prayer times, live countdown, major BD cities, Hanafi/Shafi‘i, IFB/MWL (PR #7).
+- Home screen **live next prayer** card (shared preferences with Prayer screen).
+- `CONTENT_LICENSE.md` — sources and attribution policy for Quran, prayer math, future hadith/dua.
+- App `versionName` `0.3.0-alpha01` (ship APK after CI + device QA).
+
+### Not yet
+- Qibla, adhan notifications, full 64-district list, GPS.
+
 ## Phase 0 — Build health
 
 ### Completed
@@ -12,64 +23,38 @@ All notable changes to **Islamic Knowledge Platform** are tracked here by milest
 - Made CI prefer `./gradlew` when the wrapper jar is present, with a system `gradle` fallback.
 - Release workflow now validates Quran content before packaging.
 - Merged via PR #2.
+- Monorepo dual CI (Android + Web) and restored Gradle root after web merge (PR #6).
 
 ### Optional follow-up
 - Commit `gradle/wrapper/gradle-wrapper.jar` when a desktop Gradle install is available.
 
 ## v0.2.0-alpha — Quran ✅ released
 
-**Release tag:** `v0.2.0-alpha01`  
-**Device QA:** passed on Android phone (2026-09-13)
+**Release tags:** `v0.2.0-alpha01`, `v0.2.0-alpha02`  
+**Device QA:** passed on Android phone (2026-09-13) for Quran milestone
 
 ### Completed
-- Added the Quran feature module and offline Quran reader architecture.
-- Added the 114-surah catalog and full-content generation pipeline.
-- Added Arabic Quran text with Bengali Rowwad translation metadata.
-- Added Juz, Hizb, page, and Sajdah metadata to reader content.
-- Added surah filtering by Bengali, English, and Arabic names.
-- Added in-surah search and Quran-wide search entry.
-- Added bookmarks, last-read/resume, and local notes.
-- Added copy and Android share actions.
-- Added Arabic/Bengali display toggles and reader font scaling.
-- Added focused full-screen Quran reader experience.
-- Added retry/backoff handling to the Quran content generator for transient API failures.
-- Added CI validation for 114 surahs and 6,236 ayahs before Android builds.
-- Continued Material 3 design-system work for Islamic green/warm-neutral theming, Bengali-first typography, and consistent shapes.
-- Updated README with current milestone status and roadmap.
-- Persisted Arabic/Bengali display choices and reader font scale locally across reader sessions.
-- Hardened note rendering so a newly saved note is reflected immediately in the current reader.
-- Replaced the Quran reader back icon with the AutoMirrored Material icon for RTL-aware navigation.
-- Hardened app navigation state so the selected tab, surah, and ayah can be restored by Compose saveable state.
-- Enabled Android edge-to-edge and applied safe-drawing insets around the full-screen reader.
-- Refined Quran-wide search with trimmed queries, a clear action, and explicit idle/empty states.
-- **Phase 1 library UI:** Surah / Juz / Page / Bookmark / Notes tabs on the Quran home screen.
-- Jump to the first ayah of a Juz or Mushaf page when structural metadata is present in the content package.
-- Notes library list with open and delete; bookmark list with remove.
-- Preference helpers for listing all notes and removing bookmarks.
-- Repository helpers for Juz/page index lookup.
-- Clearer accessibility content descriptions on primary reader and library actions.
-- Reader polish: progress bar, previous/next surah, keep-screen-on, auto last-read on scroll, Arabic RTL + line height (PR #4).
-- Published release APK `v0.2.0-alpha01` via GitHub Actions (full offline content package).
-- Real-device QA passed: scrolling, search, bookmark, notes, copy/share, resume, library tabs.
+- Quran feature module and offline reader architecture.
+- 114-surah catalog and full-content generation pipeline.
+- Arabic text with Bengali translation metadata; Juz/page/sajdah metadata.
+- Search, bookmarks, notes, copy/share, font scale, reader polish.
+- CI validation for 114 surahs and 6,236 ayahs.
+- Library tabs: Surah / Juz / Page / Bookmark / Notes.
 
 ### Optional later (not blocking)
-- Dedicated Arabic font asset for even clearer Mushaf-style rendering.
-- Hizb-quarter navigation UI beyond metadata display.
-- Audio recitation (future milestone).
+- Dedicated Arabic font asset; audio recitation; hizb-quarter UI.
 
 ## v0.1.0-alpha01 — Foundation
 
 ### Released
-- Initial Android/Compose project foundation.
-- Modular project structure for core and feature modules.
-- Material 3 design foundation and navigation shell.
+- Initial Android/Compose foundation, modular structure, Material 3 shell.
 - GitHub Actions Android build and release APK workflows.
-- First published prerelease APK: `v0.1.0-alpha01`.
+- First prerelease APK: `v0.1.0-alpha01`.
 
 ## Development policy
 
 - Development is organized into coherent milestones rather than tiny isolated changes.
 - CI is checked at milestone boundaries; larger Gradle/dependency/release changes require CI verification.
 - A release is considered ready only after CI verification and device APK testing.
-- Development APKs are not installed after every commit. A device-QA checkpoint will be announced when the Quran milestone reaches the appropriate state.
 - Only register a module in `settings.gradle.kts` when it has a real `build.gradle.kts`.
+- Religious content sources are recorded in `CONTENT_LICENSE.md`.

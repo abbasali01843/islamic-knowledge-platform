@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Mosque
@@ -23,10 +21,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.islamicknowledge.platform.core.design.components.SectionHeader
+import com.islamicknowledge.platform.feature.prayer.PrayerCalculator
+import com.islamicknowledge.platform.feature.prayer.PrayerLocations
+import com.islamicknowledge.platform.feature.prayer.PrayerPreferences
+import kotlinx.coroutines.delay
+import java.util.Date
 
 private data class QuickAction(
     val title: String,
@@ -46,6 +55,27 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onQuickActionClick: (HomeDestination) -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val preferences = remember(context) { PrayerPreferences(context) }
+    var now by remember { mutableStateOf(Date()) }
+    val location = remember(preferences.getLocationId()) {
+        PrayerLocations.all.firstOrNull { it.id == preferences.getLocationId() } ?: PrayerLocations.default
+    }
+    val times = remember(now, location, preferences.getMadhab(), preferences.getMethod()) {
+        PrayerCalculator.calculate(
+            now = now,
+            location = location,
+            madhab = preferences.getMadhab(),
+            method = preferences.getMethod(),
+        )
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000)
+            now = Date()
+        }
+    }
+
     val actions = listOf(
         QuickAction("কুরআন", "পড়া ও অনুসন্ধান", HomeDestination.QURAN),
         QuickAction("হাদিস", "সহিহ উৎসভিত্তিক জ্ঞান", HomeDestination.HADITH),
@@ -74,6 +104,7 @@ fun HomeScreen(
 
         item {
             Card(
+                onClick = { onQuickActionClick(HomeDestination.PRAYER) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -85,8 +116,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(48.dp),
+                        modifier = Modifier.size(48.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -98,17 +128,22 @@ fun HomeScreen(
                     }
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
-                            "পরবর্তী নামাজ",
+                            "পরবর্তী নামাজ · ${location.nameBengali}",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            "ফজর",
+                            times.next.nameBengali,
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            "স্থান ও সময় নির্ধারণ করলে লাইভ কাউন্টডাউন দেখাবে।",
+                            PrayerCalculator.formatTimeBn(times.next.time),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Text(
+                            "বাকি ${PrayerCalculator.formatCountdownBn(times.remainingMs)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
                         )
