@@ -22,6 +22,7 @@ import { HadithCard } from './HadithCard';
 import { NawawiFortyView } from './NawawiFortyView';
 import { HadithBooksView } from './HadithBooksView';
 import { toBengaliNumerals } from '../../utils/prayerCalculation';
+import { fetchLiveHadiths } from '../../services/hadithApi';
 
 type HadithTab = 'topics' | 'nawawi' | 'books' | 'bookmarks';
 
@@ -42,6 +43,8 @@ export const HadithScreen: React.FC = () => {
   });
 
   const [dailyHadithCopied, setDailyHadithCopied] = useState(false);
+  const [liveHadiths, setLiveHadiths] = useState<HadithItem[]>([]);
+  const [apiState, setApiState] = useState<'loading' | 'online' | 'cache' | 'error'>('loading');
 
   useEffect(() => {
     try {
@@ -51,6 +54,16 @@ export const HadithScreen: React.FC = () => {
     }
   }, [bookmarks]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchLiveHadiths().then(({ items, fromCache }) => {
+      if (cancelled) return;
+      setLiveHadiths(items);
+      setApiState(fromCache ? 'cache' : 'online');
+    }).catch(() => { if (!cancelled) setApiState('error'); });
+    return () => { cancelled = true; };
+  }, []);
+
   const toggleBookmark = (hadithId: string) => {
     setBookmarks((prev) =>
       prev.includes(hadithId) ? prev.filter((id) => id !== hadithId) : [...prev, hadithId]
@@ -58,14 +71,16 @@ export const HadithScreen: React.FC = () => {
   };
 
   // Hadith of the day based on day of year
+  const availableHadiths = useMemo(() => [...HADITH_ITEMS, ...liveHadiths], [liveHadiths]);
+
   const dailyHadith: HadithItem = useMemo(() => {
     const today = new Date();
     const dayOfYear = Math.floor(
       (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24
     );
-    const index = dayOfYear % HADITH_ITEMS.length;
-    return HADITH_ITEMS[index] || HADITH_ITEMS[0];
-  }, []);
+    const index = dayOfYear % availableHadiths.length;
+    return availableHadiths[index] || availableHadiths[0];
+  }, [availableHadiths]);
 
   const handleCopyDailyHadith = async () => {
     if (!dailyHadith) return;
@@ -81,7 +96,7 @@ export const HadithScreen: React.FC = () => {
 
   // Filter Hadiths for the 'topics' or 'bookmarks' tab
   const filteredHadiths = useMemo(() => {
-    let list = HADITH_ITEMS;
+    let list = availableHadiths;
 
     if (activeTab === 'bookmarks') {
       list = list.filter((h) => bookmarks.includes(h.id));
@@ -109,7 +124,7 @@ export const HadithScreen: React.FC = () => {
     }
 
     return list;
-  }, [activeTab, selectedTopicId, gradeFilter, searchQuery, bookmarks]);
+  }, [activeTab, selectedTopicId, gradeFilter, searchQuery, bookmarks, availableHadiths]);
 
   const renderTopicIcon = (iconName: string) => {
     switch (iconName) {
@@ -187,7 +202,14 @@ export const HadithScreen: React.FC = () => {
         )}
       </div>
 
-      {/* Main Tabs Navigation */}
+
+        <div className="flex items-center justify-between rounded-2xl border border-[#E8EFEA] dark:border-[#3A4D43]/60 bg-white dark:bg-[#1A221C] px-4 py-3 text-xs">
+          <div className="flex items-center gap-2 font-semibold"><span className={"w-2 h-2 rounded-full " + (apiState === 'online' ? 'bg-emerald-500' : apiState === 'cache' ? 'bg-amber-500' : apiState === 'error' ? 'bg-red-500' : 'bg-slate-400 animate-pulse')} />
+            <span>{apiState === 'online' ? 'অনলাইন হাদিস API সক্রিয়' : apiState === 'cache' ? 'ক্যাশ থেকে হাদিস দেখানো হচ্ছে' : apiState === 'error' ? 'অনলাইন API পাওয়া যাচ্ছে না — স্থানীয় হাদিস চালু আছে' : 'হাদিস API সংযোগ হচ্ছে...'}</span></div>
+          <span className="text-[#717A74]">{toBengaliNumerals(liveHadiths.length)} অনলাইন</span>
+        </div>
+
+      {/* Main Tabs Navigation */
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#E8EFEA] dark:bg-[#222C25] overflow-x-auto no-scrollbar">
         <button
           type="button"
