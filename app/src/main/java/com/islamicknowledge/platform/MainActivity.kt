@@ -75,6 +75,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
         Destination("আরও") { Icon(Icons.Rounded.MoreHoriz, contentDescription = null) },
     )
     var selected by rememberSaveable { mutableIntStateOf(0) }
+    var moreRoute by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(selected) {
         if (selected == 2) requestNotificationPermission()
     }
@@ -85,8 +86,8 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
 
     fun openQuran() { selected = 1; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPrayer() { selected = 2; selectedSurahNumber = 0; selectedAyah = 0 }
-    fun openHadith() { selected = 4; selectedSurahNumber = 0; selectedAyah = 0 }
-    fun openDua() { selected = 5; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openHadith() { selected = 4; moreRoute = 1; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openDua() { selected = 4; moreRoute = 2; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSurah(surah: Surah, ayah: Int?) {
         selected = 1
