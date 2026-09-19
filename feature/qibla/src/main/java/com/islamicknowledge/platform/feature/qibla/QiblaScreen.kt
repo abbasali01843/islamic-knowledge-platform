@@ -4,6 +4,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.view.Surface
+import android.view.WindowManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,12 +37,27 @@ fun QiblaScreen(modifier: Modifier = Modifier) {
         val sensor = manager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                val matrix = FloatArray(9)
-                SensorManager.getRotationMatrixFromVector(matrix, event.values)
+                val rotation = context.getSystemService(WindowManager::class.java)
+                    ?.defaultDisplay
+                    ?.rotation
+                    ?: Surface.ROTATION_0
+                val rawMatrix = FloatArray(9)
+                SensorManager.getRotationMatrixFromVector(rawMatrix, event.values)
+                val adjustedMatrix = FloatArray(9)
+                when (rotation) {
+                    Surface.ROTATION_90 -> SensorManager.remapCoordinateSystem(rawMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, adjustedMatrix)
+                    Surface.ROTATION_180 -> SensorManager.remapCoordinateSystem(rawMatrix, SensorManager.AXIS_MINUS_X, SensorManager.AXIS_MINUS_Y, adjustedMatrix)
+                    Surface.ROTATION_270 -> SensorManager.remapCoordinateSystem(rawMatrix, SensorManager.AXIS_MINUS_Y, SensorManager.AXIS_X, adjustedMatrix)
+                    else -> rawMatrix.copyInto(adjustedMatrix)
+                }
                 val orientation = FloatArray(3)
-                SensorManager.getOrientation(matrix, orientation)
+                SensorManager.getOrientation(adjustedMatrix, orientation)
                 heading = (Math.toDegrees(orientation[0].toDouble()) + 360.0) % 360.0
             }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        if (sensor != null) manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+        onDispose { manager.unregisterListener(listener) }    }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
         }
         if (sensor != null) manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
