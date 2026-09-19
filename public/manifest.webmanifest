@@ -22,7 +22,7 @@
     {
       "name": "কুরআন",
       "short_name": "কুরআন",
-      "url": "/?module=quran",
+      "url": "/quran",
       "icons": [
         {
           "src": "/icon.svg",
@@ -33,7 +33,7 @@
     {
       "name": "হাদিস",
       "short_name": "হাদিস",
-      "url": "/?module=hadith",
+      "url": "/hadith",
       "icons": [
         {
           "src": "/icon.svg",
