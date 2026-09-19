@@ -16,7 +16,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import { HADITH_ITEMS, HADITH_TOPICS } from '../../data/hadithData';
+import { HADITH_TOPICS } from '../../data/hadithData';
 import { HadithItem } from '../../types/hadith';
 import { HadithCard } from './HadithCard';
 import { NawawiFortyView } from './NawawiFortyView';
@@ -97,15 +97,13 @@ export const HadithScreen: React.FC = () => {
   };
 
   // Hadith of the day based on day of year
-  const availableHadiths = useMemo(() => [...HADITH_ITEMS, ...liveHadiths], [liveHadiths]);
+  const availableHadiths = liveHadiths;
 
-  const dailyHadith: HadithItem = useMemo(() => {
+  const dailyHadith: HadithItem | undefined = useMemo(() => {
+    if (!availableHadiths.length) return undefined;
     const today = new Date();
-    const dayOfYear = Math.floor(
-      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24
-    );
-    const index = dayOfYear % availableHadiths.length;
-    return availableHadiths[index] || availableHadiths[0];
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+    return availableHadiths[dayOfYear % availableHadiths.length];
   }, [availableHadiths]);
 
   const handleCopyDailyHadith = async () => {
