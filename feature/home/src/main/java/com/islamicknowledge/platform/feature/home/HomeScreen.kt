@@ -58,15 +58,16 @@ fun HomeScreen(
     val context = LocalContext.current
     val preferences = remember(context) { PrayerPreferences(context) }
     var now by remember { mutableStateOf(Date()) }
-    val location = remember(preferences.getLocationId()) {
-        PrayerLocations.all.firstOrNull { it.id == preferences.getLocationId() } ?: PrayerLocations.default
-    }
-    val times = remember(now, location, preferences.getMadhab(), preferences.getMethod()) {
+    val locationId = preferences.getLocationId()
+    val location = PrayerLocations.all.firstOrNull { it.id == locationId } ?: PrayerLocations.default
+    val madhab = preferences.getMadhab()
+    val method = preferences.getMethod()
+    val times = remember(now, locationId, madhab, method) {
         PrayerCalculator.calculate(
             now = now,
             location = location,
-            madhab = preferences.getMadhab(),
-            method = preferences.getMethod(),
+            madhab = madhab,
+            method = method,
         )
     }
     LaunchedEffect(Unit) {
