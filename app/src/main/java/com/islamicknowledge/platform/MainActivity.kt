@@ -34,6 +34,8 @@ import com.islamicknowledge.platform.core.design.IslamicKnowledgeTheme
 import com.islamicknowledge.platform.core.model.quran.Surah
 import com.islamicknowledge.platform.feature.home.HomeDestination
 import com.islamicknowledge.platform.feature.hadith.HadithScreen
+import com.islamicknowledge.platform.feature.calendar.CalendarScreen
+import com.islamicknowledge.platform.feature.zakat.ZakatScreen
 import com.islamicknowledge.platform.feature.qibla.QiblaScreen
 import com.islamicknowledge.platform.feature.dua.DuaScreen
 import com.islamicknowledge.platform.feature.home.HomeScreen
@@ -90,6 +92,8 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
     fun openHadith() { selected = 4; moreRoute = 1; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openDua() { selected = 4; moreRoute = 2; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openQibla() { selected = 4; moreRoute = 3; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openCalendar() { selected = 4; moreRoute = 4; selectedSurahNumber = 0; selectedAyah = 0 }
+    fun openZakat() { selected = 4; moreRoute = 5; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openPlaceholder(index: Int) { selected = index; selectedSurahNumber = 0; selectedAyah = 0 }
     fun openSurah(surah: Surah, ayah: Int?) {
         selected = 1
@@ -154,7 +158,7 @@ private fun IslamicKnowledgeApp(requestNotificationPermission: () -> Unit) {
                 }
                 2 -> PrayerScreen(modifier = Modifier.fillMaxSize())
                 3 -> QuranSearchScreen(onResultClick = ::openSurah)
-                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); 3 -> QiblaScreen(modifier = Modifier.fillMaxSize()); else -> PlaceholderScreen("আরও") }
+                4 -> when (moreRoute) { 1 -> HadithScreen(modifier = Modifier.fillMaxSize()); 2 -> DuaScreen(modifier = Modifier.fillMaxSize()); 3 -> QiblaScreen(modifier = Modifier.fillMaxSize()); 4 -> CalendarScreen(modifier = Modifier.fillMaxSize()); 5 -> ZakatScreen(modifier = Modifier.fillMaxSize()); else -> PlaceholderScreen("আরও") }
                 else -> PlaceholderScreen(destinations[selected].label)
             }
         }
