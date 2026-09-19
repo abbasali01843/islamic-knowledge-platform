@@ -1,0 +1,15 @@
+{
+  "name":"Islamic Knowledge Platform",
+  "short_name":"Islamic Knowledge",
+  "description":"Learn • Practice • Live Islam",
+  "lang":"bn",
+  "dir":"ltr",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "background_color":"#F7FAF7",
+  "theme_color":"#176B4D",
+  "icons":[
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
